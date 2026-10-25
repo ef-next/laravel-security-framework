@@ -17,6 +17,8 @@ published; this release prepares the repository for publication.
   (`resources/boost/guidelines/core.blade.php`) and the skill
   `efnext-security-integration`; `php artisan boost:install` loads them into
   the coding agent's context of an application that uses the framework.
+  `bin/boost-check` (`./start-security-framework.sh boost`) installs Boost in a
+  fresh application and checks that both arrive.
 - README: new sections "AI coding agents" and "How this was built", the latter
   stating that the framework was written by an AI coding agent under the
   maintainer's direction, and what evidence backs it.

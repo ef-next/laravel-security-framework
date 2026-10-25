@@ -168,7 +168,7 @@ Documentation is written in English first. German ([README.de.md](README.de.md),
 
 The framework is meant to be integrated by people and by coding agents alike. It ships the rules an agent has to keep in three lengths:
 
-- **[Laravel Boost](https://laravel.com/docs/boost):** in an application with Boost, `php artisan boost:install` (or `boost:update`) loads the package's guideline into the agent's context – the rules that keep the guarantees, in [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – and installs the skill [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): the integration procedure and how to verify it, loaded when the agent needs it.
+- **[Laravel Boost](https://laravel.com/docs/boost):** in an application with Boost, `php artisan boost:install` (or `boost:update`) lists `efnext/security-framework` among the third-party packages; once it is selected, Boost loads the package's guideline into the agent's context – the rules that keep the guarantees, in [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – and installs the skill [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): the integration procedure and how to verify it, loaded when the agent needs it.
 - **[AGENTS.md](AGENTS.md):** the complete contract, for agents without Boost and for agents that change the framework itself.
 - **[llms.txt](llms.txt):** an index of the documentation.
 

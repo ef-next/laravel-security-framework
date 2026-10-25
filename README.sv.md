@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 4d2cef283fdcb5f2448dd4501fd5b2acf677fc49ade80c7701bad9ca70684d98 -->
+<!-- source: README.md sha256: abf5679b95ed94a208633d5ce21be0e415d12e43aa5446ea0ecc62912774402a -->
 # ef.next Security Framework
 
 *Svensk utgåva — den [engelska versionen](README.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
@@ -171,7 +171,7 @@ Dokumentationen skrivs på engelska först ([README.md](README.md), `docs/en/`).
 
 Ramverket är tänkt att integreras av både människor och kodagenter. Det levererar reglerna som en agent måste följa i tre längder:
 
-- **[Laravel Boost](https://laravel.com/docs/boost):** I en applikation med Boost laddar `php artisan boost:install` (eller `boost:update`) paketets riktlinje i agentens kontext – reglerna som upprätthåller garantierna, i [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – och installerar skillen [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): integrationsförloppet och hur det verifieras, laddad när agenten behöver den.
+- **[Laravel Boost](https://laravel.com/docs/boost):** I en applikation med Boost listar `php artisan boost:install` (eller `boost:update`) `efnext/security-framework` bland tredjepartspaketen; när det är valt laddar Boost paketets riktlinje i agentens kontext – reglerna som upprätthåller garantierna, i [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – och installerar skillen [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): integrationsförloppet och hur det verifieras, laddad när agenten behöver den.
 - **[AGENTS.md](AGENTS.md):** det fullständiga kontraktet, för agenter utan Boost och för agenter som ändrar själva ramverket.
 - **[llms.txt](llms.txt):** ett index över dokumentationen.
 

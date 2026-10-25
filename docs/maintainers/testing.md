@@ -21,6 +21,7 @@ installs Composer dependencies when needed and runs the gates:
 ./start-security-framework.sh mutate          # mutation testing on the security core
 ./start-security-framework.sh load mysql      # 48 forked writers on two chains (AUDIT_LOAD_WRITERS, AUDIT_LOAD_EVENTS)
 ./start-security-framework.sh example pgsql   # examples/laravel-app on a fresh Laravel skeleton, framework from this checkout
+./start-security-framework.sh boost           # Laravel Boost on a fresh skeleton: guideline and skill land in AGENTS.md and the skills folders
 ./start-security-framework.sh shell           # bash inside the PHP container
 ./start-security-framework.sh down            # stop and remove the containers
 
@@ -30,7 +31,7 @@ DEPS=lowest ./start-security-framework.sh install            # lowest allowed de
 ```
 
 The building blocks it orchestrates are `bin/composer`, `bin/test`, `bin/check`,
-`bin/mutate` and `examples/laravel-app/install.sh`; `bin/docs-check` (Python 3,
+`bin/mutate`, `bin/boost-check` and `examples/laravel-app/install.sh`; `bin/docs-check` (Python 3,
 no dependencies) runs the documentation gates and works on the host as well.
 Output is mirrored to `.claude/*.txt` (gitignored) so that a run can be read
 after the fact. `composer.lock` is not committed (this is a

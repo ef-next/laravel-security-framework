@@ -10,9 +10,10 @@ issue.
 
 ## Part 1 — Integrating the framework into an application
 
-If the application uses [Laravel Boost](https://laravel.com/docs/boost),
-`php artisan boost:install` has already put the short form of this part into
-your context (`resources/boost/guidelines/core.blade.php`) and offers the skill
+If the application uses [Laravel Boost](https://laravel.com/docs/boost) and
+`efnext/security-framework` was selected in `php artisan boost:install`, Boost
+has already put the short form of this part into your context
+(`resources/boost/guidelines/core.blade.php`) and offers the skill
 `efnext-security-integration`. This part is the complete version.
 
 ### What you are integrating

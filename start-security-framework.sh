@@ -70,6 +70,7 @@ print_usage() {
     echo "  ./start-security-framework.sh load [db]            Lasttest mit AUDIT_LOAD_WRITERS Writern (Standard 48) auf einer Datenbank"
     echo "  ./start-security-framework.sh install              Composer install im Container (DEPS=lowest, LARAVEL=13 möglich)"
     echo "  ./start-security-framework.sh example [db]         Beispiel-App (examples/laravel-app) frisch aufsetzen und testen; db = sqlite | pgsql | mysql | mariadb"
+    echo "  ./start-security-framework.sh boost                Laravel Boost in einer frischen App: lädt es Richtlinie und Skill des Frameworks?"
     echo "  ./start-security-framework.sh shell                Bash im PHP-Container"
     echo "  ./start-security-framework.sh down                 Container stoppen und entfernen"
     echo "  ./start-security-framework.sh help                 Diese Hilfe"
@@ -88,7 +89,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 case "$MODE" in
-    check|test|concurrency|matrix|mutate|load|install|shell|example|down)
+    check|test|concurrency|matrix|mutate|load|install|shell|example|boost|down)
         ;;
     help|-h|--help)
         print_usage
@@ -402,6 +403,17 @@ case "$MODE" in
         fi
         report "Beispiel-App ($target)" "${PIPESTATUS[0]}"
         ;;
+
+    boost)
+        # Laravel Boost: bin/boost-check legt in build/boost-app eine frische Laravel-App an,
+        # installiert das Framework (path repository) und laravel/boost, führt
+        # boost:install --guidelines --skills ohne Rückfragen aus (Agenten Claude Code und
+        # Codex über boost.json) und prüft AGENTS.md, die Skills und boost:update.
+        echo "▶ [4/4] Laravel-Boost-Integration..."
+        rm -rf build/boost-app
+        docker compose run --rm --no-deps php bin/boost-check /app/build/boost-app 2>&1 | tee "$OUTPUT_DIR/boost-output.txt"
+        report "Laravel Boost" "${PIPESTATUS[0]}"
+        ;;
 esac
 
 echo ""
@@ -413,6 +425,8 @@ elif [ "$MODE" = "mutate" ]; then
     echo "  📄 Ausgaben: $OUTPUT_DIR/mutation-output.txt"
 elif [ "$MODE" = "load" ]; then
     echo "  📄 Ausgaben: $OUTPUT_DIR/load-<db>.txt"
+elif [ "$MODE" = "boost" ]; then
+    echo "  📄 Ausgaben: $OUTPUT_DIR/boost-output.txt, Anwendung in build/boost-app"
 elif [ "$MODE" = "example" ]; then
     echo "  📄 Ausgaben: $OUTPUT_DIR/example-output.txt, Anwendung in build/example-app"
 else

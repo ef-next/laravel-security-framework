@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 4d2cef283fdcb5f2448dd4501fd5b2acf677fc49ade80c7701bad9ca70684d98 -->
+<!-- source: README.md sha256: abf5679b95ed94a208633d5ce21be0e415d12e43aa5446ea0ecc62912774402a -->
 # ef.next Security Framework
 
 *Deutsche Ausgabe — die [englische Fassung](README.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
@@ -171,7 +171,7 @@ Die Dokumentation wird zuerst auf Englisch geschrieben ([README.md](README.md), 
 
 Das Framework soll von Menschen und von Coding-Agenten gleichermaßen integriert werden. Es liefert die Regeln, die ein Agent einhalten muss, in drei Längen:
 
-- **[Laravel Boost](https://laravel.com/docs/boost):** In einer Anwendung mit Boost lädt `php artisan boost:install` (oder `boost:update`) die Richtlinie des Pakets in den Kontext des Agenten – die Regeln, die die Garantien erhalten, in [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – und installiert den Skill [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): den Integrationsablauf und seine Prüfung, geladen, sobald der Agent ihn braucht.
+- **[Laravel Boost](https://laravel.com/docs/boost):** In einer Anwendung mit Boost führt `php artisan boost:install` (oder `boost:update`) `efnext/security-framework` unter den Drittpaketen auf; sobald es ausgewählt ist, lädt Boost die Richtlinie des Pakets in den Kontext des Agenten – die Regeln, die die Garantien erhalten, in [resources/boost/guidelines/core.blade.php](resources/boost/guidelines/core.blade.php) – und installiert den Skill [`efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): den Integrationsablauf und seine Prüfung, geladen, sobald der Agent ihn braucht.
 - **[AGENTS.md](AGENTS.md):** der vollständige Vertrag, für Agenten ohne Boost und für Agenten, die das Framework selbst ändern.
 - **[llms.txt](llms.txt):** ein Index der Dokumentation.
 

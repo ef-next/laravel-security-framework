@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Prove that Laravel Boost picks up the framework's AI guideline and skill.
+#
+#   bin/boost-check [target-dir]          default target: build/boost-app
+#
+# What it does, in the order a person (or an agent) would:
+#   1. composer create-project laravel/laravel        a stock Laravel 12 application
+#   2. composer require efnext/security-framework     from this repository (path repository)
+#      + composer require --dev laravel/boost
+#   3. boost.json selecting Claude Code and Codex     so boost:install runs without prompts
+#   4. php artisan boost:install --guidelines --skills
+#   5. assertions on AGENTS.md, the installed skills and boost.json
+#   6. php artisan boost:update                       the result survives an update
+#
+# Needs PHP >= 8.3, Composer and network access to Packagist. Inside the framework's
+# Docker image:  ./start-security-framework.sh boost
+#
+# Environment:
+#   LARAVEL   skeleton major version (default 12).
+#   BOOST     version constraint for laravel/boost (default: Composer's choice).
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$HERE/.." && pwd)"
+TARGET="${1:-$REPO/build/boost-app}"
+LARAVEL="${LARAVEL:-12}"
+BOOST="${BOOST:-}"
+SKILL="efnext-security-integration"
+HEADING="## ef.next Security Framework (efnext/security-framework)"
+
+step() { printf '\n\033[1m▶ %s\033[0m\n' "$*"; }
+failures=0
+ok() { printf '  ✅ %s\n' "$*"; }
+bad() { printf '  ❌ %s\n' "$*"; failures=$((failures + 1)); }
+expect_file() { if [ -f "$1" ]; then ok "$1 exists"; else bad "$1 is missing"; fi; }
+expect_in() {   # file, fixed string, description
+    if [ -f "$1" ] && grep -qF -- "$2" "$1"; then ok "$3"; else bad "$3 (missing in $1: $2)"; fi
+}
+expect_not_in() {
+    if [ -f "$1" ] && grep -qF -- "$2" "$1"; then bad "$3 (found in $1: $2)"; else ok "$3"; fi
+}
+
+if [ -e "$TARGET" ] && [ -n "$(ls -A "$TARGET" 2>/dev/null)" ]; then
+    echo "Target directory $TARGET exists and is not empty. Remove it or pass another directory." >&2
+    exit 1
+fi
+
+step "1/6 Creating a Laravel $LARAVEL application in $TARGET"
+composer create-project "laravel/laravel:^$LARAVEL.0" "$TARGET" --no-interaction --no-progress --prefer-dist --no-scripts
+cd "$TARGET"
+[ -f .env ] || cp .env.example .env
+php artisan key:generate --ansi --no-interaction
+
+step "2/6 Requiring the framework from $REPO and Laravel Boost"
+composer config repositories.security-framework path "$REPO"
+composer require "efnext/security-framework:@dev" --no-interaction --no-progress --prefer-dist
+composer require --dev "laravel/boost${BOOST:+:$BOOST}" --no-interaction --no-progress --prefer-dist
+composer show laravel/boost | grep -E '^(name|versions)'
+
+step "3/6 Selecting agents and the package in boost.json"
+# Without a terminal boost:install takes agents and third-party packages from boost.json;
+# this is the file an interactive run would leave behind.
+cat > boost.json <<'JSON'
+{
+    "agents": ["claude_code", "codex"],
+    "packages": ["efnext/security-framework"]
+}
+JSON
+cat boost.json
+
+step "4/6 php artisan boost:install --guidelines --skills"
+php artisan boost:install --guidelines --skills --no-interaction --no-ansi 2>&1 | tee boost-install.log
+
+step "5/6 Checking what Boost installed"
+expect_file AGENTS.md
+expect_in AGENTS.md "<laravel-boost-guidelines>" "AGENTS.md has a Boost guideline block"
+expect_in AGENTS.md "$HEADING" "the framework's guideline is in AGENTS.md"
+expect_in AGENTS.md "Audit::transaction(fn () => ...)" "the guideline's rules are rendered"
+expect_in AGENTS.md "php artisan security:doctor --strict" "the guideline's code snippet is rendered"
+expect_not_in AGENTS.md "@verbatim" "no unrendered Blade directives"
+expect_not_in AGENTS.md "@endverbatim" "no unrendered Blade directives (end)"
+for dir in .claude/skills .agents/skills; do
+    expect_file "$dir/$SKILL/SKILL.md"
+    expect_in "$dir/$SKILL/SKILL.md" "name: $SKILL" "$dir/$SKILL has the skill's frontmatter"
+    expect_in "$dir/$SKILL/SKILL.md" "## Verify your work" "$dir/$SKILL has the skill's body"
+done
+expect_in boost.json "efnext/security-framework" "boost.json keeps the package"
+expect_in boost.json "$SKILL" "boost.json tracks the skill"
+expect_not_in boost-install.log "could not be rendered" "Boost rendered every file"
+expect_not_in boost-install.log "frontmatter must define" "Boost parsed the skill's frontmatter"
+
+echo ""
+echo "--- the framework's section of AGENTS.md as an agent will read it:"
+awk -v h="$HEADING" 'index($0, h) == 1 { on = 1 } on && /^=== / && seen { exit } on { print; seen = 1 }' AGENTS.md | head -60
+
+step "6/6 php artisan boost:update"
+php artisan boost:update --no-interaction --no-ansi 2>&1 | tee boost-update.log
+expect_in AGENTS.md "$HEADING" "the guideline survives boost:update"
+expect_file ".claude/skills/$SKILL/SKILL.md"
+
+echo ""
+if [ "$failures" -eq 0 ]; then
+    printf '\033[1m✅ Laravel Boost installs the guideline and the skill (application in %s)\033[0m\n' "$TARGET"
+    exit 0
+fi
+printf '\033[1m❌ %d check(s) failed – see above and %s/boost-install.log\033[0m\n' "$failures" "$TARGET"
+exit 1

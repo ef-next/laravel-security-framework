@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Mutation testing (Pest) on the security core: hashing, sanitising, signing,
+# verification, writing, doctor, identifiers, tenant isolation.
+#
+#   bin/mutate                 inside CI / a container with pcov (or xdebug) available
+#   bin/mutate --min=70        fail below a score
+#   MUTATE_PARALLEL=0 bin/mutate   one process instead of one per CPU (slower, easier to debug)
+#   MUTATE_PATHS=packages/audit/src/Hashing bin/mutate   only a part of the core (comma-separated)
+#
+# Every mutation that survives is a behaviour the tests do not pin down. The
+# score is a floor for the parts that carry the security guarantees, not a
+# vanity metric for the whole code base; the rest (providers, console
+# rendering) is covered by ordinary tests.
+#
+# Coverage is what maps mutants to tests. Pest collects it in worker processes
+# it spawns itself, so a coverage driver that is merely switched on for this
+# shell's PHP process (php -d ...) is not enough: the Docker image ships pcov
+# with pcov.enabled=0 for fast ordinary test runs, and a worker started that way
+# reports every mutant as "uncovered" and the score as 0 %. The settings below
+# therefore go through the environment, which every child process inherits,
+# and are verified in a child process before anything is mutated.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+paths=(
+    packages/audit/src/Hashing
+    packages/audit/src/Sanitizing
+    packages/audit/src/Signing
+    packages/audit/src/Verification
+    packages/audit/src/Writing
+    packages/audit/src/Records
+    packages/audit/src/Doctor
+    packages/audit/src/Anchoring
+    packages/audit/src/Listeners
+    packages/addressing/src/Identifiers
+    packages/addressing/src/Generation
+    packages/addressing/src/Eloquent
+    packages/tenant/src/Eloquent
+    packages/tenant/src/Context
+    packages/tenant/src/Resolution
+    packages/tenant/src/Membership
+    packages/tenant/src/Http
+    packages/tenant/src/Locating
+    packages/tenant/src/Queue
+    packages/tenant/src/Database
+    packages/tenant/src/TenantContextManager.php
+)
+joined=$(IFS=,; echo "${paths[*]}")
+if [ -n "${MUTATE_PATHS:-}" ]; then
+    joined="$MUTATE_PATHS"
+fi
+
+# --- coverage driver for this process and every process Pest spawns -------------------------
+ini_dir=$(mktemp -d "${TMPDIR:-/tmp}/mutate-ini.XXXXXX")
+trap 'rm -rf "$ini_dir"' EXIT
+printf 'pcov.enabled=1\npcov.directory=%s\n' "$PWD/packages" > "$ini_dir/zz-mutate.ini"
+
+# A leading ":" keeps the default scan directory (the image's conf.d); an already
+# configured PHP_INI_SCAN_DIR is extended instead of replaced.
+if [ -n "${PHP_INI_SCAN_DIR:-}" ]; then
+    export PHP_INI_SCAN_DIR="${PHP_INI_SCAN_DIR}:${ini_dir}"
+else
+    export PHP_INI_SCAN_DIR=":${ini_dir}"
+fi
+export XDEBUG_MODE=coverage
+
+# Verify in a fresh child process, exactly as Pest's workers will see it.
+driver=$(php -r '
+    if (extension_loaded("pcov") && filter_var(ini_get("pcov.enabled"), FILTER_VALIDATE_BOOL)) { echo "pcov"; }
+    elseif (extension_loaded("xdebug") && str_contains((string) ini_get("xdebug.mode").getenv("XDEBUG_MODE"), "coverage")) { echo "xdebug"; }
+    else { echo "none"; }
+')
+
+if [ "$driver" = "none" ]; then
+    echo "❌ No code coverage driver is active in child PHP processes (pcov disabled or missing, xdebug not in coverage mode)."
+    echo "   Mutation testing needs coverage to map mutants to tests; without it every mutant is 'uncovered' and the score is 0 %."
+    echo "   Install pcov (pecl install pcov) or run with xdebug; see docs/operations.md."
+    exit 2
+fi
+echo "▶ coverage driver in worker processes: $driver"
+
+# The plugin writes mutated sources below its own package directory; make sure it exists.
+mkdir -p vendor/pestphp/pest-plugin-mutate/.temp/mutations
+
+parallel=(--parallel)
+if [ "${MUTATE_PARALLEL:-1}" = "0" ]; then
+    parallel=()
+fi
+
+php vendor/bin/pest --mutate ${parallel[@]+"${parallel[@]}"} --colors=never --path="$joined" "$@" 2> >(grep -v 'pest-plugin-mutate/src/\.\./\.temp' >&2)

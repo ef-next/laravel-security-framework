@@ -1,0 +1,31 @@
+{
+    "name": "efnext/security-audit",
+    "description": "Tamper-evident audit log for Laravel: per-tenant hash chains with sequence numbers, database-level append-only enforcement, HMAC signatures, external anchoring and a verifier. Part of the ef.next Security Framework.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "ext-json": "*",
+        "efnext/security-tenant": "self.version",
+        "illuminate/console": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/events": "^12.0 || ^13.0",
+        "illuminate/http": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Efnext\\Security\\Audit\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Efnext\\Security\\Audit\\AuditServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

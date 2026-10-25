@@ -1,0 +1,189 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+|--------------------------------------------------------------------------
+| Framework-free self-check
+|--------------------------------------------------------------------------
+|
+| Exercises the security-critical core (canonical JSON, event hashing,
+| signing, metadata sanitising, identifier parsing) with nothing but PHP.
+| Runs without Composer: php bin/selfcheck
+|
+| The Pest suite covers the same ground and much more; this script exists so
+| the invariants can be checked in environments without dependencies.
+|
+*/
+
+$root = dirname(__DIR__);
+
+spl_autoload_register(static function (string $class) use ($root): void {
+    $map = [
+        'Efnext\\Security\\Addressing\\' => '/packages/addressing/src/',
+        'Efnext\\Security\\Tenant\\' => '/packages/tenant/src/',
+        'Efnext\\Security\\Audit\\' => '/packages/audit/src/',
+    ];
+
+    foreach ($map as $prefix => $dir) {
+        if (str_starts_with($class, $prefix)) {
+            $file = $root.$dir.str_replace('\\', '/', substr($class, strlen($prefix))).'.php';
+
+            if (is_file($file)) {
+                require $file;
+            }
+
+            return;
+        }
+    }
+});
+
+use Efnext\Security\Addressing\Generation\Encoding;
+use Efnext\Security\Addressing\Identifiers\GlobalObjectId;
+use Efnext\Security\Addressing\Identifiers\PublicId;
+use Efnext\Security\Audit\Enums\SignatureStatus;
+use Efnext\Security\Audit\Hashing\CanonicalJson;
+use Efnext\Security\Audit\Hashing\EventHasher;
+use Efnext\Security\Audit\Hashing\HashableRecord;
+use Efnext\Security\Audit\Sanitizing\DefaultMetadataSanitizer;
+use Efnext\Security\Audit\Sanitizing\KeyMatcher;
+use Efnext\Security\Audit\Sanitizing\SanitizerConfig;
+use Efnext\Security\Audit\Sanitizing\SecretDetector;
+use Efnext\Security\Audit\Signing\HmacSigner;
+use Efnext\Security\Audit\Signing\Keyring;
+use Efnext\Security\Tenant\Context\TenantId;
+
+$failures = 0;
+$checks = 0;
+
+$check = static function (string $name, bool $condition, string $detail = '') use (&$failures, &$checks): void {
+    $checks++;
+
+    if ($condition) {
+        echo "  ok   {$name}\n";
+
+        return;
+    }
+
+    $failures++;
+    echo "  FAIL {$name}".($detail !== '' ? " – {$detail}" : '')."\n";
+};
+
+echo "Canonical JSON\n";
+$a = CanonicalJson::encode(['b' => ['z' => 1, 'a' => [3, 2]], 'a' => 'x', 'f' => 1.0]);
+$b = CanonicalJson::encode(['f' => 1.0, 'a' => 'x', 'b' => ['a' => [3, 2], 'z' => 1]]);
+$check('key order does not change the encoding', $a === $b, $a.' vs '.$b);
+$check('list order is preserved', CanonicalJson::encode(['l' => [1, 2]]) !== CanonicalJson::encode(['l' => [2, 1]]));
+$check('zero fraction is preserved', str_contains(CanonicalJson::encode(['f' => 1.0]), '1.0'));
+$check('unicode and slashes are not escaped', CanonicalJson::encode(['s' => 'ä/ö']) === '{"s":"ä/ö"}');
+try {
+    CanonicalJson::encode(['bad' => "\xB1\x31"]);
+    $check('invalid utf-8 throws', false);
+} catch (Throwable) {
+    $check('invalid utf-8 throws', true);
+}
+
+echo "Event hashing\n";
+$hasher = new EventHasher;
+$record = static fn (array $overrides = []): array => HashableRecord::build(...array_merge([
+    'id' => '01J8ZQ0Y3K5X6W7V8T9S0R1P2N',
+    'chainKey' => 'tenant:9c5f3e2a-7d1b-4e8f-a2c6-0b1d2e3f4a5b',
+    'tenantId' => '9c5f3e2a-7d1b-4e8f-a2c6-0b1d2e3f4a5b',
+    'sequence' => 7,
+    'previousHash' => str_repeat('a', 64),
+    'occurredAtMicros' => 1758391200123456,
+    'actorType' => 'user',
+    'actorId' => '42',
+    'actorLabel' => null,
+    'action' => 'domain.updated',
+    'resourceType' => 'domain',
+    'resourceId' => 'dom_7f3k9zq2m4x8c1bt',
+    'outcome' => 'allowed',
+    'metadata' => ['old' => 'inactive', 'new' => 'active'],
+    'requestId' => 'req_1',
+    'correlationId' => null,
+    'ipAddress' => '203.0.113.10',
+    'userAgent' => 'curl',
+], $overrides));
+
+$base = $hasher->hash($record());
+$check('hash is 64 hex chars', preg_match('/^[0-9a-f]{64}$/', $base) === 1);
+$check('hash is deterministic', $base === $hasher->hash($record()));
+$check('actor id is covered by the hash', $base !== $hasher->hash($record(['actorId' => '43'])));
+$check('actor type is covered by the hash', $base !== $hasher->hash($record(['actorType' => 'system'])));
+$check('ip address is covered by the hash', $base !== $hasher->hash($record(['ipAddress' => '203.0.113.11'])));
+$check('request id is covered by the hash', $base !== $hasher->hash($record(['requestId' => 'req_2'])));
+$check('sequence is covered by the hash', $base !== $hasher->hash($record(['sequence' => 8])));
+$check('event id is covered by the hash', $base !== $hasher->hash($record(['id' => '01J8ZQ0Y3K5X6W7V8T9S0R1P2M'])));
+$check(
+    'no delimiter ambiguity between fields',
+    $hasher->hash($record(['action' => 'a.b', 'resourceType' => 'c'])) !== $hasher->hash($record(['action' => 'a', 'resourceType' => 'b.c']))
+);
+$check('metadata key order does not matter', $hasher->hash($record(['metadata' => ['x' => 1, 'y' => 2]])) === $hasher->hash($record(['metadata' => ['y' => 2, 'x' => 1]])));
+
+echo "Signing\n";
+$keyring = Keyring::fromString('k1:base64:'.base64_encode(random_bytes(32)).',k2:base64:'.base64_encode(random_bytes(32)), 'k2');
+$signer = new HmacSigner($keyring);
+$signature = $signer->sign($base);
+$check('active key signs', $signature !== null && $signature->keyId === 'k2');
+$check('signature verifies', $signer->verify($base, $signature?->keyId, $signature?->value) === SignatureStatus::Valid);
+$check('tampered hash fails verification', $signer->verify(strrev($base), $signature?->keyId, $signature?->value) === SignatureStatus::Invalid);
+$check('unknown key is reported', $signer->verify($base, 'k9', $signature?->value) === SignatureStatus::UnknownKey);
+try {
+    Keyring::fromString('short:base64:'.base64_encode('too-short'), 'short');
+    $check('short keys are rejected', false);
+} catch (Throwable) {
+    $check('short keys are rejected', true);
+}
+
+echo "Key matching\n";
+$matcher = new KeyMatcher(['password', 'token', 'api key', 'session id', 'secret', 'authorization', 'pin'], ['token_type']);
+foreach (['password', 'passwordConfirmation', 'old_password', 'access_token', 'x-api-key', 'apiKey', 'session_id', 'SessionId', 'Authorization', 'client_secret', 'shipping_pin'] as $key) {
+    $check("redacts {$key}", $matcher->matches($key));
+}
+foreach (['author', 'oauth_provider', 'bypass_reason', 'passport_number', 'session_count', 'compass_heading', 'token_type', 'pinned', 'note'] as $key) {
+    $check("keeps {$key}", ! $matcher->matches($key));
+}
+
+echo "Secret detection\n";
+$detector = new SecretDetector;
+$check('detects JWTs', $detector->looksSecret('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U') !== null);
+$check('detects bearer strings', $detector->looksSecret('Bearer abc.def.ghi') !== null);
+$check('detects private keys', $detector->looksSecret("-----BEGIN RSA PRIVATE KEY-----\nMIIE") !== null);
+$check('detects card numbers', $detector->looksSecret('4111 1111 1111 1111') === 'card_number');
+$check('ignores ordinary numbers', $detector->looksSecret('4111 1111 1111 1112') === null);
+$check('ignores prose', $detector->looksSecret('The quick brown fox') === null);
+
+echo "Sanitizer\n";
+$sanitizer = new DefaultMetadataSanitizer(new SanitizerConfig(
+    redactKeyPatterns: ['password', 'token', 'api key', 'session id', 'secret'],
+    pseudonymizeKeyPatterns: ['email', 'username'],
+    allowKeys: ['token_type'],
+    pseudonymKey: 'pepper-for-selfcheck-only-0123456789',
+));
+$out = $sanitizer->sanitize([
+    'password' => 'hunter2',
+    'nested' => ['client_secret' => 'x', 'safe' => 'ok', 'jwt' => 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'],
+    'email' => 'CEO@Acme.example',
+    'author' => 'Enrico',
+    'token_type' => 'bearer',
+    'session_count' => 3,
+]);
+$check('secret values are replaced by a marker', ($out['password'] ?? null) === '[REDACTED]' && ($out['nested']['client_secret'] ?? null) === '[REDACTED]');
+$check('secret-shaped values are replaced even under harmless keys', ($out['nested']['jwt'] ?? null) === '[REDACTED]');
+$check('emails are pseudonymised with a keyed hash', isset($out['email_hash']) && ! isset($out['email']) && $out['email_hash'] === hash_hmac('sha256', 'ceo@acme.example', 'pepper-for-selfcheck-only-0123456789'));
+$check('harmless keys survive', ($out['author'] ?? null) === 'Enrico' && ($out['token_type'] ?? null) === 'bearer' && ($out['session_count'] ?? null) === 3 && ($out['nested']['safe'] ?? null) === 'ok');
+$noPepper = new DefaultMetadataSanitizer(new SanitizerConfig(['password'], ['email'], pseudonymKey: null));
+$check('without a pepper identifiers are redacted, never hashed plainly', ($noPepper->sanitize(['email' => 'a@b.c'])['email_hash'] ?? null) === '[REDACTED]');
+
+echo "Identifiers\n";
+$check('public ids are strict', PublicId::isValid('dom_7f3k9zq2m4x8c1bt') && ! PublicId::isValid('DOM_7F3K9ZQ2M4X8C1BT') && ! PublicId::isValid(' dom_7f3k9zq2m4x8c1bt'));
+$check('global object ids stay lowercase', GlobalObjectId::of('example-service', 'domain', PublicId::fromString('dom_7f3k9zq2m4x8c1bt'))->toString() === 'example-service:domain:dom_7f3k9zq2m4x8c1bt');
+$check('global object ids reject sql fragments', ! GlobalObjectId::isValid('svc:tenant:ten_abc OR 1=1'));
+$check('base32 has no ambiguous characters', preg_match('/[ilou]/', Encoding::Base32->encode(random_bytes(200))) === 0);
+$check('base32 of ten bytes is sixteen chars', strlen(Encoding::Base32->encode(random_bytes(10))) === 16);
+$check('tenant ids reject whitespace and injection', TenantId::tryFromString(" abc") === null && TenantId::tryFromString("abc' OR 1=1") === null && TenantId::tryFromString('9c5f3e2a-7d1b-4e8f-a2c6-0b1d2e3f4a5b') !== null);
+
+echo "\n{$checks} checks, {$failures} failures\n";
+exit($failures === 0 ? 0 : 1);

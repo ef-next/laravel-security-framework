@@ -1,0 +1,40 @@
+name: Doctor FAIL or deployment question
+description: security:doctor reports something you cannot resolve, or a production setup question.
+title: "doctor: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every FAIL/WARN line names the fix; docs/en/guides/production.md and docs/en/operations.md
+        cover the production setup. If those did not answer it, this is the place.
+  - type: textarea
+    id: doctor
+    attributes:
+      label: security:doctor --json (and --strict if you use it)
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you changed and what the doctor said afterwards
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Hosting, database, where the signing keys live, anchor store, scheduler. No secrets.
+      placeholder: |
+        Laravel 12 on Forge, PostgreSQL 16 (managed), keys in AWS Secrets Manager,
+        AUDIT_ANCHOR_STORES=filesystem,database on S3 with Object Lock, scheduler on one worker
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 12.x, PHP 8.4.x"
+    validations:
+      required: true

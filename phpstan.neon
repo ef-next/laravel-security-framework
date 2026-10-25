@@ -1,0 +1,20 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - packages/addressing/src
+        - packages/tenant/src
+        - packages/audit/src
+        # Fixtures use the host-facing traits (BelongsToTenant, HasTenantMemberships,
+        # HasPublicId), so the traits are analysed in a real model context.
+        - packages/addressing/tests/Fixtures
+        - packages/tenant/tests/Fixtures
+        - packages/audit/tests/Fixtures
+    excludePaths:
+        # uses the Blueprint::tenantId() macro, which static analysis cannot see
+        - packages/tenant/tests/Fixtures/Schema.php
+    tmpDir: build/phpstan
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false

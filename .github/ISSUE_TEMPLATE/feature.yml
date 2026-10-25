@@ -1,0 +1,34 @@
+name: Feature request
+description: A missing guarantee, a safer integration path, or a documented gap you want closed.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can go wrong today, or what is unnecessarily hard? Refer to the threat model (docs/en/threat-model.md) where it applies.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should the framework do, refuse, or make easier — and what does it deliberately still not do?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: ["security-tenant", "security-audit", "security-addressing", "documentation", "tooling / CI", "several"]
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: This does not weaken an existing refusal into a warning
+        - label: docs/en/what-it-does-not-do.md was read; the request is not one of the listed non-goals — or it argues why one should change
+        - label: I can help with a pull request

@@ -1,0 +1,26 @@
+{
+    "name": "efnext/security-addressing",
+    "description": "Unguessable, readable public identifiers (prefix_body) and global object ids for Laravel models. Part of the ef.next Security Framework.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Efnext\\Security\\Addressing\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Efnext\\Security\\Addressing\\AddressingServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

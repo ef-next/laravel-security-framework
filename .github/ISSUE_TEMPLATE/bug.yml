@@ -1,0 +1,69 @@
+name: Bug report
+description: The framework behaves differently from what its documentation promises.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security vulnerabilities go to security@ef-next.com, never here (see SECURITY.md).
+        Before filing: `php artisan security:doctor`, then docs/en/guides/troubleshooting.md.
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the documentation promises
+      description: Quote or link the guarantee, guide or reference entry you relied on.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens instead
+      description: Exception, status code, doctor line or verifier reason — verbatim.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Smallest reproduction
+      description: Ideally a Pest/PHPUnit test against a fresh Laravel app, or the steps in examples/laravel-app that show it.
+      render: php
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: security:doctor --json
+      description: Paste the output. It contains no secrets.
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "`composer show efnext/security-framework laravel/framework | grep -E '^(name|versions)'` and `php -v | head -1`"
+      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 12.x, PHP 8.4.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options: ["PostgreSQL", "MySQL", "MariaDB", "SQLite (tests)", "other / several"]
+    validations:
+      required: true
+  - type: input
+    id: database-version
+    attributes:
+      label: Database server version
+      placeholder: "PostgreSQL 16.4 / MySQL 8.4.2 / MariaDB 11.4.3"
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      description: The framework's guarantees hold under conditions (README → Guarantees and their conditions). Please confirm.
+      options:
+        - label: "No `withoutGlobalScope(TenantScope::class)`, `DB::table()` or raw SQL on tenant-owned tables in the code path"
+        - label: "Audit writes inside business transactions use `Audit::transaction()`, not `DB::transaction()`"
+        - label: "`AUDIT_ENFORCE_APPEND_ONLY` and `AUDIT_FAIL_FAST` are not disabled"

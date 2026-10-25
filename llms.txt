@@ -1,0 +1,60 @@
+# ef.next Security Framework
+
+> Three Laravel packages (PHP 8.3+, Laravel 12) that make a multi-tenant application fail closed: `efnext/security-tenant` resolves the tenant of every request, job and command and refuses any query on a tenant-owned model without one; `efnext/security-audit` keeps an append-only, hash-chained, HMAC-signed, externally anchored audit log per tenant with a verifier and a doctor; `efnext/security-addressing` issues unguessable public ids and global object ids. MIT licence, ef.next AB.
+
+Read in this order if you are integrating the framework: AGENTS.md (the contract and the verification commands), then the README walk-through, then the guide for the part you touch. Every refusal and every doctor line names the fix; act on that text.
+
+## Start here
+
+- [AGENTS.md](AGENTS.md): integration contract for agents — steps, invariants you must keep, how to verify your own work, symptom table; and the rules for changing the framework itself
+- [Laravel Boost guideline](resources/boost/guidelines/core.blade.php) and [skill `efnext-security-integration`](resources/boost/skills/efnext-security-integration/SKILL.md): what `php artisan boost:install` puts into an application's agent context – the short form of AGENTS.md part 1
+- [README.md](README.md): the ten-minute integration, the guarantees and the conditions they depend on, compatibility
+- [What it does not do](docs/en/what-it-does-not-do.md): the boundaries — read before promising anything on the framework's behalf
+- [Getting started](docs/en/getting-started.md): a complete first integration with sample outputs
+- [Concepts](docs/en/concepts.md): tenant context, scope, membership, public id, chain, anchor, doctor — the vocabulary
+
+## Guides
+
+- [Tenancy](docs/en/guides/tenancy.md): resolution, memberships and roles, scoping, cross-tenant work, sessions
+- [Addressing](docs/en/guides/addressing.md): public ids, global object ids, route binding, lookups
+- [Auditing](docs/en/guides/auditing.md): recording events, transactions, actors, metadata, verification, anchors, keys
+- [Jobs and commands](docs/en/guides/jobs-and-commands.md): queue propagation, TenantAware jobs, tenant:run, scheduler
+- [Sanctum tokens](docs/en/guides/sanctum-tokens.md): binding API tokens to a tenant
+- [Production](docs/en/guides/production.md): secrets, database, anchors on object storage, the deployment gate, go-live checklist
+- [Troubleshooting](docs/en/guides/troubleshooting.md): by symptom — status codes, exceptions, migration errors, doctor findings, verifier reasons
+
+## Reference
+
+- [Configuration](docs/en/reference/configuration.md): every config key, its environment variable, default and security effect
+- [Artisan commands](docs/en/reference/artisan-commands.md): security:doctor, audit:verify, audit:anchor, audit:key:generate, tenant:run — options, output, exit codes
+- [Events](docs/en/reference/events.md): the Laravel events the packages dispatch and what the audit log records for them
+- [Exceptions](docs/en/reference/exceptions.md): every exception, its HTTP status and what to do
+- [Public API](docs/en/reference/api.md): facades, traits, middleware, blueprint macros, contracts
+- [Compatibility](docs/en/reference/compatibility.md): supported and experimental PHP, Laravel and database versions
+- [.env.example](.env.example): every environment variable with its default and a production block
+
+## Operations
+
+- [Operations hub](docs/en/operations.md): doctor, scheduling, keys, anchors, database notes, performance
+- [Monitoring](docs/en/operations/monitoring.md): doctor JSON and check ids, verifier alerting, events, metrics
+- [Key rotation](docs/en/operations/key-rotation.md): the keyring, scheduled rotation, retiring a key, compromised key
+- [Incident response](docs/en/operations/incident-response.md): preserve, verify, read violations, find the last trustworthy anchor, contain, record
+
+## Design
+
+- [Architecture](docs/en/architecture.md): packages, dependency direction, the write path, the scope
+- [Threat model](docs/en/threat-model.md): attackers, assets, what each layer defends against
+- [Diagrams](docs/en/diagrams/system-overview.md): system overview, [tenant request lifecycle](docs/en/diagrams/tenant-request-lifecycle.md), [audit write and verification](docs/en/diagrams/audit-write-and-verification.md), [trust boundaries](docs/en/diagrams/trust-boundaries.md), [data model](docs/en/diagrams/data-model.md) — Mermaid, each with the picture in words
+- [Integration checklist](docs/en/integration-checklist.md): what to verify before go-live
+
+## Example and verification
+
+- [Example application](examples/laravel-app/README.md): a stock Laravel 12 app plus fifteen files — models, migrations, routes, controller, job, tests — installed and tested in CI on every push
+- [Hash known-answer vectors](packages/audit/tests/Fixtures/hash-vectors.json): recompute an event hash and signature without this code base
+- [Testing](docs/maintainers/testing.md), [Releasing](docs/maintainers/releasing.md), [CONTRIBUTING.md](CONTRIBUTING.md): the gates, the release process, what a change needs
+
+## Optional
+
+- [CHANGELOG.md](CHANGELOG.md)
+- [SECURITY.md](SECURITY.md): private vulnerability reports; [SUPPORT.md](SUPPORT.md): where to ask
+- German (`docs/de/`, `README.de.md`) and Swedish (`docs/sv/`, `README.sv.md`) editions follow each release; English is the source of truth

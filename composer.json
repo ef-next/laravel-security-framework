@@ -1,0 +1,89 @@
+{
+    "name": "efnext/security-framework",
+    "description": "ef.next Security Framework: fail-closed tenant isolation, tamper-evident audit log and safe public identifiers for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "multi-tenancy", "audit-log", "hash-chain", "public-id", "security", "laravel-boost"],
+    "authors": [
+        {"name": "ef.next", "email": "info@ef-next.com"}
+    ],
+    "require": {
+        "php": "^8.3",
+        "ext-json": "*",
+        "illuminate/auth": "^12.0 || ^13.0",
+        "illuminate/bus": "^12.0 || ^13.0",
+        "illuminate/cache": "^12.0 || ^13.0",
+        "illuminate/console": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/events": "^12.0 || ^13.0",
+        "illuminate/http": "^12.0 || ^13.0",
+        "illuminate/queue": "^12.0 || ^13.0",
+        "illuminate/routing": "^12.0 || ^13.0",
+        "illuminate/session": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0",
+        "symfony/http-kernel": "^7.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.20",
+        "laravel/sanctum": "^4.0",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-laravel": "^3.1",
+        "phpstan/phpstan": "^2.0"
+    },
+    "replace": {
+        "efnext/security-addressing": "self.version",
+        "efnext/security-tenant": "self.version",
+        "efnext/security-audit": "self.version"
+    },
+    "suggest": {
+        "laravel/sanctum": "Required for tenant-bound API tokens (Efnext\\Security\\Tenant\\Http\\Middleware\\EnsureTokenTenant).",
+        "laravel/octane": "Supported; the tenant context is cleared on every request boundary when Octane is installed."
+    },
+    "autoload": {
+        "psr-4": {
+            "Efnext\\Security\\Addressing\\": "packages/addressing/src/",
+            "Efnext\\Security\\Tenant\\": "packages/tenant/src/",
+            "Efnext\\Security\\Audit\\": "packages/audit/src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Efnext\\Security\\Tests\\": "tests/",
+            "Efnext\\Security\\Addressing\\Tests\\": "packages/addressing/tests/",
+            "Efnext\\Security\\Tenant\\Tests\\": "packages/tenant/tests/",
+            "Efnext\\Security\\Audit\\Tests\\": "packages/audit/tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Efnext\\Security\\Addressing\\AddressingServiceProvider",
+                "Efnext\\Security\\Tenant\\TenantServiceProvider",
+                "Efnext\\Security\\Audit\\AuditServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "pest --colors=never",
+        "test:coverage": "pest --coverage --min=85",
+        "lint": "pint --test",
+        "lint:fix": "pint",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnDeprecation="false"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+    <testsuites>
+        <testsuite name="Addressing">
+            <directory>packages/addressing/tests</directory>
+        </testsuite>
+        <testsuite name="Tenant">
+            <directory>packages/tenant/tests</directory>
+        </testsuite>
+        <testsuite name="Audit">
+            <directory>packages/audit/tests</directory>
+        </testsuite>
+        <testsuite name="Architecture">
+            <directory>tests/Arch</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">packages/addressing/src</directory>
+            <directory suffix=".php">packages/tenant/src</directory>
+            <directory suffix=".php">packages/audit/src</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10="/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="AUDIT_SIGNING_KEYS" value="k1:base64:Wn6sX2b0fZJ4QmY0H2vJrO3q0Q2cq0v6k5XWm7Z9m0E="/>
+        <env name="AUDIT_SIGNING_ACTIVE_KEY" value="k1"/>
+    </php>
+</phpunit>

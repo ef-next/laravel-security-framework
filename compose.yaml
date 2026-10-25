@@ -1,0 +1,98 @@
+# Development and test environment for the ef.next Security Framework.
+#
+#   ./start-security-framework.sh   one entry point: databases, image, composer, quality gate
+#   PHP_VERSION=8.4 ...             build/run with another PHP (8.3 default, 8.4, 8.5)
+#   bin/composer install            install dependencies inside the PHP container
+#   bin/test                        run the suite against sqlite, pgsql, mysql and mariadb
+#   bin/test pgsql                  run the suite against one database only
+#   bin/check                       pint + phpstan + full test matrix
+#
+# Test output is written to .claude/*.txt so it can be picked up by tooling.
+
+services:
+  php:
+    build:
+      context: ./docker/php
+      args:
+        PHP_VERSION: "${PHP_VERSION:-8.3}"
+    image: "efnext-security-framework-php:${PHP_VERSION:-8.3}"
+    working_dir: /app
+    volumes:
+      - .:/app
+      - composer-cache:/tmp/composer-cache
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      DB_CONNECTION: ${DB_CONNECTION:-sqlite}
+      AUDIT_LOAD_WRITERS: ${AUDIT_LOAD_WRITERS:-}
+      AUDIT_LOAD_EVENTS: ${AUDIT_LOAD_EVENTS:-}
+      PGSQL_HOST: pgsql
+      PGSQL_PORT: "5432"
+      PGSQL_DATABASE: security
+      PGSQL_USERNAME: security
+      PGSQL_PASSWORD: secret
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_DATABASE: security
+      MYSQL_USERNAME: security
+      MYSQL_PASSWORD: secret
+      MARIADB_HOST: mariadb
+      MARIADB_PORT: "3306"
+      MARIADB_DATABASE: security
+      MARIADB_USERNAME: security
+      MARIADB_PASSWORD: secret
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+
+  pgsql:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: security
+      POSTGRES_USER: security
+      POSTGRES_PASSWORD: secret
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U security -d security"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mysql:
+    image: mysql:8.4
+    command: ["--log-bin-trust-function-creators=1"]
+    environment:
+      MYSQL_DATABASE: security
+      MYSQL_USER: security
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  mariadb:
+    image: mariadb:11
+    command: ["--log-bin-trust-function-creators=1"]
+    environment:
+      MARIADB_DATABASE: security
+      MARIADB_USER: security
+      MARIADB_PASSWORD: secret
+      MARIADB_ROOT_PASSWORD: root
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  composer-cache:

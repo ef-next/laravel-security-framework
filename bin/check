@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Full quality gate: dependency advisories, code style, static analysis, test matrix.
+# Output is mirrored to .claude/check-output.txt (tests additionally to .claude/test-output.txt).
+set -uo pipefail
+cd "$(dirname "$0")/.."
+mkdir -p .claude
+out=.claude/check-output.txt
+echo "# bin/check run $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$out"
+
+echo "=== composer audit ===" | tee -a "$out"
+docker compose run --rm --no-deps php composer audit --no-interaction --abandoned=report 2>&1 | tee -a "$out"
+audit_rc=${PIPESTATUS[0]}
+echo "=== exit code (composer audit): $audit_rc ===" | tee -a "$out"
+
+echo "=== pint ===" | tee -a "$out"
+docker compose run --rm --no-deps php vendor/bin/pint --test 2>&1 | tee -a "$out"
+pint_rc=${PIPESTATUS[0]}
+echo "=== exit code (pint): $pint_rc ===" | tee -a "$out"
+
+echo "=== phpstan ===" | tee -a "$out"
+docker compose run --rm --no-deps php vendor/bin/phpstan analyse --memory-limit=1G --no-progress 2>&1 | tee -a "$out"
+stan_rc=${PIPESTATUS[0]}
+echo "=== exit code (phpstan): $stan_rc ===" | tee -a "$out"
+
+echo "=== tests ===" | tee -a "$out"
+bin/test "$@"
+test_rc=$?
+echo "=== exit code (tests): $test_rc ===" | tee -a "$out"
+
+if [[ $audit_rc -ne 0 || $pint_rc -ne 0 || $stan_rc -ne 0 || $test_rc -ne 0 ]]; then
+    exit 1
+fi

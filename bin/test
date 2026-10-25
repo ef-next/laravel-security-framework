@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Run the test suite against one or all databases.
+#
+#   bin/test                 sqlite, pgsql, mysql, mariadb (runs all, exit code 1 if any failed)
+#   bin/test pgsql           one database
+#   bin/test sqlite --filter=BelongsToTenant
+#
+# Output is mirrored to .claude/test-output.txt (override with TEST_OUTPUT=path).
+set -uo pipefail
+cd "$(dirname "$0")/.."
+mkdir -p .claude
+
+targets=("sqlite" "pgsql" "mysql" "mariadb")
+if [[ $# -gt 0 && "$1" != --* ]]; then
+    targets=("$1")
+    shift
+fi
+
+out="${TEST_OUTPUT:-.claude/test-output.txt}"
+{
+    echo "# bin/test run $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "# targets: ${targets[*]}  args: $*"
+} > "$out"
+
+status=0
+summary=""
+for db in "${targets[@]}"; do
+    echo "" | tee -a "$out"
+    echo "=== database: $db ===" | tee -a "$out"
+    if [[ "$db" == "sqlite" ]]; then
+        docker compose run --rm --no-deps -e DB_CONNECTION=sqlite php vendor/bin/pest --colors=never "$@" 2>&1 | tee -a "$out"
+    else
+        docker compose run --rm -e DB_CONNECTION="$db" php vendor/bin/pest --colors=never "$@" 2>&1 | tee -a "$out"
+    fi
+    rc=${PIPESTATUS[0]}
+    echo "=== exit code ($db): $rc ===" | tee -a "$out"
+    if [[ $rc -eq 0 ]]; then
+        summary+="  ✅ $db"$'\n'
+    else
+        summary+="  ❌ $db (exit code $rc)"$'\n'
+        status=1
+    fi
+done
+
+echo "" | tee -a "$out"
+echo "=== summary ===" | tee -a "$out"
+printf '%s' "$summary" | tee -a "$out"
+
+exit $status

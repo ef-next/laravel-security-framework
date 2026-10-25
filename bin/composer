@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Run Composer inside the PHP container (no PHP needed on the host).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+exec docker compose run --rm --no-deps php composer "$@"

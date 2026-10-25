@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+"""Documentation gates. No dependencies beyond Python 3.10+ and (optionally) php.
+
+    bin/docs-check              all checks, exit 1 on any failure
+    bin/docs-check links        one group: links | coverage | php | translations
+    bin/docs-check rehash docs/de/guides/tenancy.md   after refreshing a translation
+
+Checks
+  links         every relative Markdown link and #anchor resolves (README, CHANGELOG,
+                CONTRIBUTING, AGENTS, SECURITY, SUPPORT, CODE_OF_CONDUCT, llms.txt, docs/**,
+                examples/**, .github/**)
+  coverage      the reference pages cover the code: every env() in the package config
+                files is in .env.example and docs/en/reference/configuration.md; every
+                Artisan command in artisan-commands.md; every Exceptions/ and Events/
+                class in exceptions.md / events.md
+  php           every ```php block in the English docs that is not an explicit fragment
+                (contains "..." or "…") passes `php -l`
+  translations  every docs/de/** and docs/sv/** page names its English source and the
+                source's sha256 at translation time; a changed source is reported as
+                drift (a warning, never a failure — translations follow releases); the
+                fenced code blocks of a translation must equal those of its source
+  rehash <translated file>...   rewrite the sha256 in the header of the given translated
+                pages after refreshing them against their English source
+
+Run from anywhere; paths are relative to the repository root (the parent of bin/).
+"""
+
+from __future__ import annotations
+
+import hashlib
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+os.chdir(ROOT)
+
+ROOT_MARKDOWN = ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "AGENTS.md", "SECURITY.md", "SUPPORT.md", "CODE_OF_CONDUCT.md", "llms.txt"]
+MARKDOWN_DIRS = ["docs", "examples", ".github"]
+
+failures: list[str] = []
+warnings: list[str] = []
+
+
+def fail(message: str) -> None:
+    failures.append(message)
+    print(f"  ✗ {message}")
+
+
+def warn(message: str) -> None:
+    warnings.append(message)
+    print(f"  ! {message}")
+
+
+def markdown_files() -> list[Path]:
+    files = [Path(f) for f in ROOT_MARKDOWN if Path(f).is_file()]
+    for directory in MARKDOWN_DIRS:
+        files.extend(sorted(Path(directory).rglob("*.md")))
+    return files
+
+
+def strip_code(text: str) -> str:
+    """Remove fenced code blocks and inline code so that links inside them are ignored."""
+    text = re.sub(r"```.*?```", "", text, flags=re.S)
+    return re.sub(r"`[^`\n]*`", "", text)
+
+
+def github_slug(heading: str) -> str:
+    heading = re.sub(r"`", "", heading)
+    heading = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", heading)   # link text
+    heading = heading.strip().lower()
+    heading = re.sub(r"[^\w\- ]", "", heading, flags=re.UNICODE)
+    return heading.replace(" ", "-")
+
+
+def anchors_of(path: Path) -> set[str]:
+    slugs: dict[str, int] = {}
+    result: set[str] = set()
+    in_code = False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        match = re.match(r"^(#{1,6})\s+(.*?)\s*#*\s*$", line)
+        if not match:
+            continue
+        slug = github_slug(match.group(2))
+        count = slugs.get(slug, 0)
+        slugs[slug] = count + 1
+        result.add(slug if count == 0 else f"{slug}-{count}")
+    # explicit <a id="..."> / <a name="...">
+    for explicit in re.findall(r'<a\s+(?:id|name)="([^"]+)"', path.read_text(encoding="utf-8")):
+        result.add(explicit)
+    return result
+
+
+LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
+
+
+def check_links() -> None:
+    print("links")
+    anchor_cache: dict[Path, set[str]] = {}
+    checked = 0
+    for file in markdown_files():
+        text = strip_code(file.read_text(encoding="utf-8"))
+        for raw in LINK.findall(text):
+            if re.match(r"^[a-z][a-z0-9+.-]*:", raw) or raw.startswith("//"):
+                continue  # http(s):, mailto:, …
+            target, _, fragment = raw.partition("#")
+            if target == "":
+                resolved = file
+            else:
+                resolved = (file.parent / target).resolve()
+                try:
+                    resolved.relative_to(ROOT)
+                except ValueError:
+                    fail(f"{file}: link leaves the repository: {raw}")
+                    continue
+                if not resolved.exists():
+                    fail(f"{file}: broken link {raw}")
+                    continue
+            checked += 1
+            if fragment and resolved.suffix == ".md":
+                if resolved not in anchor_cache:
+                    anchor_cache[resolved] = anchors_of(resolved)
+                if fragment.lower() not in anchor_cache[resolved]:
+                    fail(f"{file}: missing anchor #{fragment} in {resolved.relative_to(ROOT)}")
+    print(f"  {checked} relative links checked")
+
+
+def php_env_names(paths: list[Path]) -> set[str]:
+    names: set[str] = set()
+    for path in paths:
+        names.update(re.findall(r"env\(\s*'([A-Z0-9_]+)'", path.read_text(encoding="utf-8")))
+    return names
+
+
+def check_coverage() -> None:
+    print("coverage")
+    config_files = sorted(Path("packages").glob("*/config/*.php"))
+    env_names = php_env_names(config_files)
+    env_example = Path(".env.example").read_text(encoding="utf-8")
+    reference = Path("docs/en/reference/configuration.md").read_text(encoding="utf-8")
+    for name in sorted(env_names):
+        if not re.search(rf"^{re.escape(name)}=", env_example, flags=re.M):
+            fail(f".env.example lacks {name} (used in a package config)")
+        if f"`{name}`" not in reference:
+            fail(f"docs/en/reference/configuration.md lacks `{name}`")
+    for name in re.findall(r"^([A-Z0-9_]+)=", env_example, flags=re.M):
+        if name not in env_names and name not in {"APP_ENV", "APP_DEBUG", "APP_KEY"}:
+            warn(f".env.example lists {name}, which no package config reads")
+    print(f"  {len(env_names)} environment variables from {len(config_files)} config files")
+
+    # every config key (array path) named in the reference exists — check the reverse: keys in
+    # the reference that are not in the config files hint at renamed keys.
+    commands: set[str] = set()
+    for path in sorted(Path("packages").glob("*/src/Console/*.php")):
+        match = re.search(r"\$signature\s*=\s*'([a-z][a-z0-9:_-]*)", path.read_text(encoding="utf-8"))
+        if match:
+            commands.add(match.group(1))
+    commands_doc = Path("docs/en/reference/artisan-commands.md").read_text(encoding="utf-8")
+    for command in sorted(commands):
+        if not re.search(rf"^##+ .*`{re.escape(command)}`", commands_doc, flags=re.M):
+            fail(f"docs/en/reference/artisan-commands.md has no section for `{command}`")
+    print(f"  {len(commands)} Artisan commands")
+
+    for kind, page in (("Exceptions", "exceptions.md"), ("Events", "events.md")):
+        doc = Path("docs/en/reference") / page
+        text = doc.read_text(encoding="utf-8")
+        classes = sorted(p.stem for p in Path("packages").glob(f"*/src/{kind}/*.php"))
+        for name in classes:
+            if not re.search(rf"`{re.escape(name)}`", text):
+                fail(f"{doc} does not mention `{name}`")
+        print(f"  {len(classes)} {kind.lower()} classes")
+
+
+FRAGMENT_MARKERS = ("...", "…")
+
+
+def wrap_fragment(block: str) -> str:
+    """Make the common documentation fragments parseable: a config array excerpt
+    ('key' => [...],) becomes a return statement, a bare method becomes a class member."""
+    if block.lstrip().startswith("<?php"):
+        return block
+    lines = block.splitlines()
+    first = next((line.strip() for line in lines if line.strip() and not line.strip().startswith("//")), "")
+    if re.match(r"""^['"][^'"]+['"]\s*=>""", first):
+        return "<?php\nreturn [\n" + block + "\n];\n"
+    if re.match(r"^(public|protected|private|abstract|final|static)(\s+(public|protected|private|abstract|final|static))*\s+function\s", first):
+        return "<?php\nclass DocsFragment {\n" + block + "\n}\n"
+    return "<?php\n" + block
+
+
+def check_php_blocks() -> None:
+    print("php")
+    php = "php"
+    try:
+        subprocess.run([php, "-v"], check=True, capture_output=True)
+    except (OSError, subprocess.CalledProcessError):
+        warn("php not found; skipping code block lint")
+        return
+    linted = skipped = 0
+    for file in [Path("README.md"), Path("AGENTS.md"), Path("CONTRIBUTING.md"), *sorted(Path("docs/en").rglob("*.md")), *sorted(Path("docs/maintainers").rglob("*.md"))]:
+        text = file.read_text(encoding="utf-8")
+        for index, block in enumerate(re.findall(r"```php\n(.*?)```", text, flags=re.S), start=1):
+            if any(marker in block for marker in FRAGMENT_MARKERS):
+                skipped += 1
+                continue
+            code = wrap_fragment(block)
+            with tempfile.NamedTemporaryFile("w", suffix=".php", delete=False) as handle:
+                handle.write(code)
+                temp = handle.name
+            try:
+                result = subprocess.run([php, "-l", temp], capture_output=True, text=True)
+            finally:
+                os.unlink(temp)
+            linted += 1
+            if result.returncode != 0:
+                message = result.stdout.strip().splitlines()[0] if result.stdout.strip() else result.stderr.strip()
+                fail(f"{file} php block #{index}: {message.replace(temp, '<block>')}")
+    print(f"  {linted} php blocks linted, {skipped} fragments skipped")
+
+
+SOURCE_HEADER = re.compile(r"<!--\s*source:\s*(\S+)\s+sha256:\s*([0-9a-f]{64})\s*-->")
+
+
+def check_translations() -> None:
+    print("translations")
+    pages = [*sorted(Path("docs/de").rglob("*.md")), *sorted(Path("docs/sv").rglob("*.md"))] if Path("docs").is_dir() else []
+    for readme in ("README.de.md", "README.sv.md"):
+        if Path(readme).is_file():
+            pages.append(Path(readme))
+    if not pages:
+        print("  no translated pages yet")
+        return
+    current = 0
+    for page in pages:
+        head = page.read_text(encoding="utf-8")[:600]
+        match = SOURCE_HEADER.search(head)
+        if not match:
+            fail(f"{page}: missing '<!-- source: <english path> sha256: <hash> -->' header")
+            continue
+        source = Path(match.group(1))
+        if not source.is_file():
+            fail(f"{page}: source {source} does not exist")
+            continue
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        if digest != match.group(2):
+            warn(f"{page}: {source} changed since translation (drift)")
+        else:
+            current += 1
+        # Code blocks are not translated: the fenced blocks of a translation must be the
+        # fenced blocks of its source, in the same order (comments included).
+        source_blocks = re.findall(r"```[^\n]*\n.*?```", source.read_text(encoding="utf-8"), flags=re.S)
+        page_blocks = re.findall(r"```[^\n]*\n.*?```", page.read_text(encoding="utf-8"), flags=re.S)
+        if source_blocks != page_blocks:
+            fail(f"{page}: fenced code blocks differ from {source} ({len(page_blocks)} vs {len(source_blocks)} blocks, or content changed)")
+    print(f"  {current} of {len(pages)} translated pages match their English source")
+
+
+def rehash(paths: list[str]) -> int:
+    status = 0
+    for raw in paths:
+        page = Path(raw)
+        text = page.read_text(encoding="utf-8")
+        match = SOURCE_HEADER.search(text[:600])
+        if not match:
+            print(f"  ✗ {page}: no source header")
+            status = 1
+            continue
+        source = Path(match.group(1))
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        text = text.replace(match.group(0), f"<!-- source: {source} sha256: {digest} -->", 1)
+        page.write_text(text, encoding="utf-8")
+        print(f"  ✓ {page}: {source} {digest[:12]}…")
+    return status
+
+
+CHECKS = {
+    "links": check_links,
+    "coverage": check_coverage,
+    "php": check_php_blocks,
+    "translations": check_translations,
+}
+
+
+def main(argv: list[str]) -> int:
+    if argv[1:2] == ["rehash"]:
+        return rehash(argv[2:])
+    selected = argv[1:] or list(CHECKS)
+    for name in selected:
+        if name not in CHECKS:
+            print(f"unknown check: {name} (known: {', '.join(CHECKS)})")
+            return 2
+        CHECKS[name]()
+    summary = Path(os.environ.get("GITHUB_STEP_SUMMARY", "")) if os.environ.get("GITHUB_STEP_SUMMARY") else None
+    if summary:
+        with summary.open("a", encoding="utf-8") as handle:
+            handle.write("### docs-check\n\n")
+            handle.write(f"- failures: {len(failures)}\n- warnings: {len(warnings)}\n")
+            for message in failures:
+                handle.write(f"  - ✗ {message}\n")
+            for message in warnings:
+                handle.write(f"  - ! {message}\n")
+    for message in warnings:
+        print(f"::warning::{message}") if os.environ.get("GITHUB_ACTIONS") else None
+    print()
+    print(f"{len(failures)} failure(s), {len(warnings)} warning(s)")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

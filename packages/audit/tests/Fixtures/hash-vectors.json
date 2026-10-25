@@ -1,0 +1,104 @@
+{
+    "_comment": [
+        "Known-answer vectors for the audit hash format (hash version 2).",
+        "event_hash = SHA-256( domain || canonical_json ) where canonical_json is the record with all object keys sorted",
+        "byte-wise (SORT_STRING) at every level, no escaped slashes or unicode, floats keep their fraction, no whitespace.",
+        "signature = HMAC-SHA256( event_hash, key ) with the raw key bytes from the keyring entry <id>:base64:<key>.",
+        "Recompute vector 1 from a shell: printf \"%s%s\" \"$domain\" \"$canonical_json\" | sha256sum",
+        "These values must never change without a new hash version; HashVectorsTest pins them."
+    ],
+    "version": 2,
+    "domain": "efnext-audit-v2\n",
+    "algorithm": "sha256",
+    "vectors": [
+        {
+            "name": "genesis event, tenant chain, full request context, nested and unsorted metadata",
+            "input": {
+                "id": "01J8Z0Q4K9T4R6Y2N3M5P7S9V1",
+                "chainKey": "tenant:0192b6a4-3c1e-7d2f-9a5b-4e6c8d0f1a2b",
+                "tenantId": "0192b6a4-3c1e-7d2f-9a5b-4e6c8d0f1a2b",
+                "sequence": 1,
+                "previousHash": null,
+                "occurredAtMicros": 1758787200123456,
+                "actorType": "user",
+                "actorId": "42",
+                "actorLabel": "Zoë Müller <zoe@example.test>",
+                "action": "invoice.approved",
+                "resourceType": "invoice",
+                "resourceId": "INV-2025-0001",
+                "outcome": "success",
+                "metadata": {
+                    "zeta": "last key first",
+                    "amount": 1250.0,
+                    "currency": "EUR",
+                    "approved": true,
+                    "note": null,
+                    "path": "/invoices/1?x=ä&y=€",
+                    "nested": {
+                        "b": [
+                            3,
+                            2,
+                            1
+                        ],
+                        "a": {
+                            "deep": "value",
+                            "ratio": 0.5
+                        }
+                    },
+                    "tags": [
+                        "export",
+                        "q3"
+                    ]
+                },
+                "requestId": "req_7f3b9c2e",
+                "correlationId": "corr_1a2b3c",
+                "ipAddress": "203.0.113.7",
+                "userAgent": "Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/128.0"
+            },
+            "canonical_json": "{\"action\":\"invoice.approved\",\"actor\":{\"id\":\"42\",\"label\":\"Zoë Müller <zoe@example.test>\",\"type\":\"user\"},\"chain\":\"tenant:0192b6a4-3c1e-7d2f-9a5b-4e6c8d0f1a2b\",\"id\":\"01J8Z0Q4K9T4R6Y2N3M5P7S9V1\",\"metadata\":{\"amount\":1250.0,\"approved\":true,\"currency\":\"EUR\",\"nested\":{\"a\":{\"deep\":\"value\",\"ratio\":0.5},\"b\":[3,2,1]},\"note\":null,\"path\":\"/invoices/1?x=ä&y=€\",\"tags\":[\"export\",\"q3\"],\"zeta\":\"last key first\"},\"occurred_at_us\":1758787200123456,\"outcome\":\"success\",\"previous_hash\":null,\"request\":{\"correlation_id\":\"corr_1a2b3c\",\"id\":\"req_7f3b9c2e\",\"ip\":\"203.0.113.7\",\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/128.0\"},\"resource\":{\"id\":\"INV-2025-0001\",\"type\":\"invoice\"},\"sequence\":1,\"tenant_id\":\"0192b6a4-3c1e-7d2f-9a5b-4e6c8d0f1a2b\",\"v\":2}",
+            "event_hash": "6c08d8d60ba781cbe2b152c55c3cf2fb5816743ed59373bb9f7d724260c58b1a"
+        },
+        {
+            "name": "second event, global chain, system actor, empty metadata, chained to vector 1",
+            "input": {
+                "id": "01J8Z0Q4KA0000000000000002",
+                "chainKey": "global",
+                "tenantId": null,
+                "sequence": 2,
+                "previousHash": "6c08d8d60ba781cbe2b152c55c3cf2fb5816743ed59373bb9f7d724260c58b1a",
+                "occurredAtMicros": 1758787260000000,
+                "actorType": "system",
+                "actorId": null,
+                "actorLabel": null,
+                "action": "tenant.scope_bypassed",
+                "resourceType": "tenant",
+                "resourceId": "unknown",
+                "outcome": "denied",
+                "metadata": [],
+                "requestId": null,
+                "correlationId": null,
+                "ipAddress": null,
+                "userAgent": null
+            },
+            "canonical_json": "{\"action\":\"tenant.scope_bypassed\",\"actor\":{\"id\":null,\"label\":null,\"type\":\"system\"},\"chain\":\"global\",\"id\":\"01J8Z0Q4KA0000000000000002\",\"metadata\":[],\"occurred_at_us\":1758787260000000,\"outcome\":\"denied\",\"previous_hash\":\"6c08d8d60ba781cbe2b152c55c3cf2fb5816743ed59373bb9f7d724260c58b1a\",\"request\":{\"correlation_id\":null,\"id\":null,\"ip\":null,\"user_agent\":null},\"resource\":{\"id\":\"unknown\",\"type\":\"tenant\"},\"sequence\":2,\"tenant_id\":null,\"v\":2}",
+            "event_hash": "8b8f57f7f1667a3ff5567b16892f3d0ba9430ba17035928bd4ec7c408c0ed045"
+        }
+    ],
+    "signatures": {
+        "keyring": "k1:base64:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+        "active_key": "k1",
+        "key_bytes": "the 32 bytes 0x00 … 0x1f",
+        "entries": [
+            {
+                "event_hash": "6c08d8d60ba781cbe2b152c55c3cf2fb5816743ed59373bb9f7d724260c58b1a",
+                "key_id": "k1",
+                "signature": "c3270c9bb5973f4b888e5fc2ca0e4f6f74713ec94d6549e02ba5608a322f8082"
+            },
+            {
+                "event_hash": "8b8f57f7f1667a3ff5567b16892f3d0ba9430ba17035928bd4ec7c408c0ed045",
+                "key_id": "k1",
+                "signature": "bf4e42aede756c9e2729dcb3f1452de155d25e207762f098777c5c44777518be"
+            }
+        ]
+    }
+}

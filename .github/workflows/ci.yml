@@ -1,0 +1,113 @@
+name: CI
+
+# Every push to main and every pull request runs the quality gates (gates.yml,
+# shared with the Release workflow) plus the experimental matrix below, which
+# is observed but allowed to fail (PHP 8.5, Laravel 13: no support promise
+# until the toolchain has caught up and the job becomes a gate).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch supersedes a running CI (the mutation job alone
+# takes ~50 minutes on 2-vCPU runners); releases are never cancelled this way.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PGSQL_HOST: 127.0.0.1
+  PGSQL_PORT: "5432"
+  PGSQL_DATABASE: security
+  PGSQL_USERNAME: security
+  PGSQL_PASSWORD: secret
+  MYSQL_HOST: 127.0.0.1
+  MYSQL_PORT: "3306"
+  MYSQL_DATABASE: security
+  # root: creating triggers with binary logging enabled needs SUPER (or log_bin_trust_function_creators).
+  MYSQL_USERNAME: root
+  MYSQL_PASSWORD: root
+  MARIADB_HOST: 127.0.0.1
+  MARIADB_PORT: "3307"
+  MARIADB_DATABASE: security
+  MARIADB_USERNAME: root
+  MARIADB_PASSWORD: root
+
+jobs:
+  gates:
+    name: Gates
+    uses: ./.github/workflows/gates.yml
+    permissions:
+      contents: read
+
+  experimental:
+    name: Experimental (PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, ${{ matrix.db }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { php: "8.5", laravel: "12", db: sqlite }
+          - { php: "8.5", laravel: "12", db: pgsql }
+          - { php: "8.5", laravel: "12", db: mysql }
+          - { php: "8.5", laravel: "12", db: mariadb }
+          - { php: "8.3", laravel: "13", db: sqlite }
+          - { php: "8.4", laravel: "13", db: pgsql }
+          - { php: "8.5", laravel: "13", db: mysql }
+    services:
+      pgsql:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: security
+          POSTGRES_USER: security
+          POSTGRES_PASSWORD: secret
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U security -d security"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: security
+          MYSQL_USER: security
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s --health-timeout 3s --health-retries 30
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_DATABASE: security
+          MARIADB_USER: security
+          MARIADB_PASSWORD: secret
+          MARIADB_ROOT_PASSWORD: root
+        ports: ["3307:3306"]
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 5s --health-timeout 3s --health-retries 30
+    env:
+      DB_CONNECTION: ${{ matrix.db }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, pdo_pgsql, pdo_mysql, pcntl
+          coverage: none
+      - name: Install dependencies (Laravel ${{ matrix.laravel }})
+        run: |
+          composer update --no-interaction --no-progress --prefer-dist \
+            --with "laravel/framework:^${{ matrix.laravel }}.0"
+          for package in laravel/framework orchestra/testbench pestphp/pest; do
+            composer show "$package" | grep -E '^(name |versions)'
+          done
+      - run: vendor/bin/pest --colors=never
+

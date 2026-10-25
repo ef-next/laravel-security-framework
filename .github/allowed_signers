@@ -1,0 +1,13 @@
+# Trust root for release tags signed with SSH keys (docs/maintainers/releasing.md).
+#
+# One maintainer per line, in the format git's gpg.ssh.allowedSignersFile expects:
+#
+#   <e-mail of the git author> namespaces="git" <key type> <public key> [comment]
+#
+# Example:
+#   enrico@example.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... release key 2026
+#
+# The Release workflow refuses to run while this file (and .github/release-keys.gpg)
+# contains no key; a tag signed by a key that is not listed here is refused as well.
+# Rotate a key by adding the new line first, releasing once, then removing the old one.
+263460160+enrico-efnext@users.noreply.github.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDSdACq0WDWxh8J5YphJm1fu7HICS56we9t01mbay1EB ef.next release key

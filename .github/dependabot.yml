@@ -1,0 +1,36 @@
+# Dependency watch (docs/maintainers/releasing.md, "Supply-chain rules"). Every update is an
+# ordinary pull request that has to pass the full gates; nothing merges itself.
+#
+# - github-actions: the workflows pin actions to commit SHAs; Dependabot bumps the
+#   SHA and the version comment together, so the pin never goes stale unnoticed.
+# - composer: the meta package and the three packages. Minor and patch bumps are
+#   grouped into one PR per week to keep the noise down; a major (a new Laravel or
+#   Pest line) arrives on its own so it can be judged against the support matrix.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(ci)"
+    labels: [dependencies, ci]
+
+  - package-ecosystem: composer
+    directories:
+      - /
+      - /packages/addressing
+      - /packages/tenant
+      - /packages/audit
+    schedule:
+      interval: weekly
+      day: monday
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies]
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]

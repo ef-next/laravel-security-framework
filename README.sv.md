@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 66fd68282e14ad067aebfbfc1223c148c133410b427d65f30916e2c579dce5da -->
+<!-- source: README.md sha256: 07fdfb2b8d43924e126975153d4298406662d800b27af7cf0632ac0cfe523d64 -->
 # ef.next Security Framework
 
 *Svensk utgåva — den [engelska versionen](README.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
@@ -16,9 +16,6 @@ Fail closed tenant-isolering (nekar hellre än släpper igenom), en manipulation
 En distribution, tre komponenter: paketet `efnext/security-framework` innehåller alla tre (komponentnamnen är reserverade via `replace` och blir separat installerbara när monorepot delas upp inför en stabil release). Composers standardstabilitet är `stable`, så en förhandsversion måste begäras uttryckligen:
 
 ```bash
-# until the package is on Packagist: point Composer at the repository once
-composer config repositories.efnext vcs https://github.com/ef-next/laravel-security-framework
-
 composer require "efnext/security-framework:^1.0@beta"
 php artisan vendor:publish --tag=security-tenant-config --tag=security-audit-config --tag=security-addressing-config
 php artisan migrate

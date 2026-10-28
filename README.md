@@ -13,9 +13,6 @@ Fail-closed tenant isolation, a tamper-evident audit log and safe public identif
 One distribution, three components: the `efnext/security-framework` package contains all three (the component names are reserved via `replace` and will become separately installable once the monorepo is split for a stable release). Composer's default stability is `stable`, so a pre-release has to be asked for explicitly:
 
 ```bash
-# until the package is on Packagist: point Composer at the repository once
-composer config repositories.efnext vcs https://github.com/ef-next/laravel-security-framework
-
 composer require "efnext/security-framework:^1.0@beta"
 php artisan vendor:publish --tag=security-tenant-config --tag=security-audit-config --tag=security-addressing-config
 php artisan migrate

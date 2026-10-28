@@ -44,7 +44,7 @@ the repository root indexes them):
 
 ### Steps (each is complete; the README shows the code)
 
-1. `composer require "efnext/security-framework:^1.0@beta"` (pre-release — Composer's default stability `stable` would not select it; until the package is on Packagist, `composer config repositories.efnext vcs <repository url>` first), publish the three configs, `php artisan migrate`, `php artisan audit:key:generate` → `.env`.
+1. `composer require "efnext/security-framework:^1.0@beta"` (pre-release — Composer's default stability `stable` would not select it), publish the three configs, `php artisan migrate`, `php artisan audit:key:generate` → `.env`.
 2. Users: add `HasTenantMemberships` to the user model; create tenants with `Tenant::create([...])`; grant memberships with `$user->grantTenantMembership($tenant->tenantId(), 'owner')`.
 3. Tenant-owned models: `use BelongsToTenant`; migration `$table->tenantId()`; relations between tenant-owned tables `$table->tenantForeignId('invoice_id', 'invoices')->cascadeOnDelete()` (composite foreign key). Optional relation: `nullable: true` — `nullOnDelete()` is refused by design.
 4. Public ids: `use HasPublicId` (+ `HasGlobalObjectId` and `implements ExternallyAddressable` when other services must name the object), `publicIdPrefix()`, `resourceType()`; migration `$table->publicId()`. Route binding uses the public id automatically.

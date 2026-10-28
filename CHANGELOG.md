@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.3 – unreleased
+
+- The package is on Packagist (`efnext/security-framework`). README and
+  AGENTS.md no longer ask to point Composer at the GitHub repository first;
+  `composer require "efnext/security-framework:^1.0@beta"` is enough.
+
 ## 1.0.0-beta.2 – 2026-10-28
 
 First public release, on Laravel 13. Apart from the move to Laravel 13, the

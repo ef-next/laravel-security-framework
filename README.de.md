@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 66fd68282e14ad067aebfbfc1223c148c133410b427d65f30916e2c579dce5da -->
+<!-- source: README.md sha256: 07fdfb2b8d43924e126975153d4298406662d800b27af7cf0632ac0cfe523d64 -->
 # ef.next Security Framework
 
 *Deutsche Ausgabe — die [englische Fassung](README.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
@@ -16,9 +16,6 @@ Tenant-Isolation (Mandantentrennung) nach dem Prinzip fail closed (im Zweifel ve
 Eine Distribution, drei Komponenten: das Paket `efnext/security-framework` enthält alle drei (die Komponentennamen sind über `replace` reserviert und werden separat installierbar, sobald das Monorepo für ein stabiles Release aufgeteilt wird). Composers Standard-Stabilität ist `stable`, ein Pre-Release muss also ausdrücklich angefordert werden:
 
 ```bash
-# until the package is on Packagist: point Composer at the repository once
-composer config repositories.efnext vcs https://github.com/ef-next/laravel-security-framework
-
 composer require "efnext/security-framework:^1.0@beta"
 php artisan vendor:publish --tag=security-tenant-config --tag=security-audit-config --tag=security-addressing-config
 php artisan migrate

@@ -114,7 +114,7 @@ how to run and extend them is maintainer documentation
 | --- | --- |
 | `composer audit` | no known advisories in the dependency tree |
 | Pint, PHPStan level 8 | style, types (including the traits in a real model context) |
-| Test matrix | behaviour on SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4 × Laravel 12 as hard gates, lowest and highest dependencies, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; line coverage ≥ 80 % (PHP 8.5 and Laravel 13 are observed in a separate job that may fail) |
+| Test matrix | behaviour on SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4/8.5 × Laravel 13 as hard gates, lowest and highest dependencies, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; line coverage ≥ 80 % (PHP 8.5 and Laravel 13 are observed in a separate job that may fail) |
 | Concurrency and load tests | forked writers never fork a chain, with and without business transactions; dozens of writers on two chains stay linear |
 | Randomised invariants | canonical JSON, hashing, identifiers, tenant ids and the sanitiser hold for random inputs |
 | Known-answer vectors | the hash format is byte-identical to recorded vectors (version, domain string, hashed fields, canonical JSON, HMAC); a change is a new hash version, never a silent edit, and `packages/audit/tests/Fixtures/hash-vectors.json` lets anyone recompute a hash without this code base |

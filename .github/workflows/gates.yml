@@ -6,9 +6,9 @@ name: Gates
 # so a release can only be published from a commit that passed exactly the gates
 # main is held to — the same jobs, the same matrix, the same thresholds:
 #   quality      – composer audit, Pint, PHPStan (PHP 8.3, highest deps)
-#   tests        – PHP 8.3 / 8.4 × Laravel 12 × sqlite / pgsql / mysql / mariadb (highest deps)
-#                  + PHP 8.3 × Laravel 12 × lowest deps on every database, line coverage ≥ 80 %
-#   databases    – supported database versions (PHP 8.4, Laravel 12):
+#   tests        – PHP 8.3 / 8.4 / 8.5 × Laravel 13 × sqlite / pgsql / mysql / mariadb (highest deps)
+#                  + PHP 8.3 × Laravel 13 × lowest deps on every database, line coverage ≥ 80 %
+#   databases    – supported database versions (PHP 8.4, Laravel 13):
 #                  PostgreSQL 14 / 16 / 17, MySQL 8.0 / 8.4, MariaDB 10.11 / 11.4 / 11 (latest)
 #   mutation     – Pest mutation testing on the security core (sqlite), fails below --min=70;
 #                  the full report is uploaded as an artifact
@@ -17,7 +17,6 @@ name: Gates
 #   example      – examples/laravel-app materialised on a fresh Laravel skeleton with the
 #                  framework installed from this checkout; its tests, anchor, verify and
 #                  security:doctor must pass on SQLite and on PostgreSQL
-# The experimental matrix (PHP 8.5, Laravel 13) is not a gate and lives in ci.yml.
 # Actions are pinned to commit SHAs (the version is in the comment); bump them deliberately.
 
 on:
@@ -67,15 +66,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ["8.3", "8.4"]
-        laravel: ["12"]
+        php: ["8.3", "8.4", "8.5"]
+        laravel: ["13"]
         deps: [highest]
         db: [sqlite, pgsql, mysql, mariadb]
         include:
-          - { php: "8.3", laravel: "12", deps: lowest, db: sqlite }
-          - { php: "8.3", laravel: "12", deps: lowest, db: pgsql }
-          - { php: "8.3", laravel: "12", deps: lowest, db: mysql }
-          - { php: "8.3", laravel: "12", deps: lowest, db: mariadb }
+          - { php: "8.3", laravel: "13", deps: lowest, db: sqlite }
+          - { php: "8.3", laravel: "13", deps: lowest, db: pgsql }
+          - { php: "8.3", laravel: "13", deps: lowest, db: mysql }
+          - { php: "8.3", laravel: "13", deps: lowest, db: mariadb }
     services:
       pgsql:
         image: postgres:16-alpine
@@ -183,7 +182,7 @@ jobs:
           php-version: "8.4"
           extensions: pdo_sqlite, pdo_pgsql, pdo_mysql, pcntl
           coverage: none
-      - run: composer update --no-interaction --no-progress --prefer-dist --with "laravel/framework:^12.0"
+      - run: composer update --no-interaction --no-progress --prefer-dist --with "laravel/framework:^13.0"
       - run: vendor/bin/pest --colors=never
 
   mutation:

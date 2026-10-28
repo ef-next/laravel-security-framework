@@ -43,7 +43,7 @@ body:
     attributes:
       label: Versions
       description: "`composer show efnext/security-framework laravel/framework | grep -E '^(name|versions)'` and `php -v | head -1`"
-      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 12.x, PHP 8.4.x"
+      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 13.x, PHP 8.4.x"
     validations:
       required: true
   - type: dropdown

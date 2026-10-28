@@ -25,11 +25,15 @@ final class AppendOnly
         $driver = $connection->getDriverName();
         $wrapped = $connection->getQueryGrammar()->wrapTable($table);
         $name = static fn (string $op): string => 'efnext_'.$table.'_no_'.$op;
+        // Connection::unprepared() asks for a literal-string. These statements are
+        // built from this fixture's own constants and the table name of the test.
+        // @phpstan-ignore argument.type
+        $unprepared = static fn (string $sql): bool => $connection->unprepared($sql);
 
         foreach (['update', 'delete'] as $op) {
             match ($driver) {
-                'pgsql' => $connection->unprepared(sprintf('DROP TRIGGER IF EXISTS %s ON %s', $name($op), $wrapped)),
-                default => $connection->unprepared(sprintf('DROP TRIGGER IF EXISTS %s', $name($op))),
+                'pgsql' => $unprepared(sprintf('DROP TRIGGER IF EXISTS %s ON %s', $name($op), $wrapped)),
+                default => $unprepared(sprintf('DROP TRIGGER IF EXISTS %s', $name($op))),
             };
         }
 
@@ -38,15 +42,15 @@ final class AppendOnly
         } finally {
             foreach (['update' => 'UPDATE', 'delete' => 'DELETE'] as $op => $statement) {
                 match ($driver) {
-                    'pgsql' => $connection->unprepared(sprintf(
+                    'pgsql' => $unprepared(sprintf(
                         'CREATE TRIGGER %s BEFORE %s ON %s FOR EACH ROW EXECUTE FUNCTION efnext_audit_prevent_mutation()',
                         $name($op), $statement, $wrapped
                     )),
-                    'mysql', 'mariadb' => $connection->unprepared(sprintf(
+                    'mysql', 'mariadb' => $unprepared(sprintf(
                         "CREATE TRIGGER %s BEFORE %s ON %s FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit records are append-only'",
                         $name($op), $statement, $wrapped
                     )),
-                    default => $connection->unprepared(sprintf(
+                    default => $unprepared(sprintf(
                         "CREATE TRIGGER %s BEFORE %s ON %s BEGIN SELECT RAISE(ABORT, 'audit records are append-only'); END",
                         $name($op), $statement, $wrapped
                     )),

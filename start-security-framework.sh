@@ -46,7 +46,7 @@
 #   PHP_VERSION=8.4 ./start-security-framework.sh check          # anderes PHP-Image (8.3 Standard, 8.4, 8.5)
 #   PHP_VERSIONS="8.3 8.5" ./start-security-framework.sh matrix  # Auswahl für den Matrix-Modus
 #   DEPS=lowest ./start-security-framework.sh install            # niedrigste erlaubte Abhängigkeiten installieren
-#   LARAVEL=13 ./start-security-framework.sh install             # gegen Laravel 13 installieren (Standard: höchste erlaubte)
+#   LARAVEL=13 ./start-security-framework.sh install             # gegen eine bestimmte Laravel-Hauptversion installieren (Standard: höchste erlaubte)
 #   Danach normal 'check' oder 'test' ausführen; 'install' ohne Variablen stellt den Standard wieder her.
 #
 # Ergebnisse landen in .claude/check-output.txt und .claude/test-output.txt,
@@ -68,7 +68,7 @@ print_usage() {
     echo "  ./start-security-framework.sh matrix               Tests unter PHP \$PHP_VERSIONS (Standard: 8.3 8.4 8.5), alle Datenbanken"
     echo "  ./start-security-framework.sh mutate [--min=N]     Mutation Testing auf dem Sicherheitskern (Pest, sqlite)"
     echo "  ./start-security-framework.sh load [db]            Lasttest mit AUDIT_LOAD_WRITERS Writern (Standard 48) auf einer Datenbank"
-    echo "  ./start-security-framework.sh install              Composer install im Container (DEPS=lowest, LARAVEL=13 möglich)"
+    echo "  ./start-security-framework.sh install              Composer install im Container (DEPS=lowest, LARAVEL=<Hauptversion> möglich)"
     echo "  ./start-security-framework.sh example [db]         Beispiel-App (examples/laravel-app) frisch aufsetzen und testen; db = sqlite | pgsql | mysql | mariadb"
     echo "  ./start-security-framework.sh boost                Laravel Boost in einer frischen App: lädt es Richtlinie und Skill des Frameworks?"
     echo "  ./start-security-framework.sh shell                Bash im PHP-Container"
@@ -79,7 +79,7 @@ print_usage() {
     echo "  ./start-security-framework.sh test mysql --group=concurrency"
     echo "  ./start-security-framework.sh test sqlite --filter=BelongsToTenant"
     echo "  PHP_VERSION=8.5 ./start-security-framework.sh check"
-    echo "  LARAVEL=13 ./start-security-framework.sh install && ./start-security-framework.sh test"
+    echo "  DEPS=lowest ./start-security-framework.sh install && ./start-security-framework.sh test"
     echo "  ./start-security-framework.sh example pgsql"
 }
 
@@ -120,7 +120,7 @@ ALL_TARGETS="sqlite pgsql mysql mariadb"
 export PHP_VERSION="${PHP_VERSION:-8.3}"
 PHP_VERSIONS="${PHP_VERSIONS:-8.3 8.4 8.5}"
 DEPS="${DEPS:-highest}"        # highest | lowest
-LARAVEL="${LARAVEL:-}"         # leer = höchste erlaubte Version, sonst z. B. 12 oder 13
+LARAVEL="${LARAVEL:-}"         # leer = höchste erlaubte Version (derzeit nur 13), sonst die Hauptversion
 
 # Ausgabedateien (gitignored)
 OUTPUT_DIR=".claude"
@@ -245,6 +245,12 @@ if [ "$needs_install" = true ]; then
         echo "  ℹ️  Installiere Abhängigkeiten (DEPS=$DEPS${LARAVEL:+, Laravel $LARAVEL})..."
         # shellcheck disable=SC2086
         bin/composer update $update_args
+    elif [ -f composer.lock ] && [ composer.json -nt composer.lock ]; then
+        # composer.json hat sich nach dem letzten Auflösen geändert (z. B. neue
+        # Laravel-Hauptversion): 'install' würde weiter aus dem alten composer.lock
+        # installieren und nur warnen. Deshalb neu auflösen.
+        echo "  ℹ️  composer.json ist neuer als composer.lock – löse die Abhängigkeiten neu auf..."
+        bin/composer update --no-interaction --prefer-dist --no-progress
     else
         echo "  ℹ️  Installiere Composer-Abhängigkeiten im Container..."
         bin/composer install --no-interaction --prefer-dist --no-progress
@@ -389,7 +395,7 @@ case "$MODE" in
 
     example)
         # Beispiel-App: examples/laravel-app/install.sh legt in build/example-app eine
-        # frische Laravel-12-Anwendung an, kopiert die Beispieldateien darüber, installiert
+        # frische Laravel-13-Anwendung an, kopiert die Beispieldateien darüber, installiert
         # das Framework aus diesem Repository (path repository) und lässt Tests, anchor,
         # verify und doctor laufen. Genau das macht auch der CI-Job "example".
         # build/ ist gitignored; ein vorhandenes build/example-app wird vorher entfernt.

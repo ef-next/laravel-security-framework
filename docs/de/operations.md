@@ -1,4 +1,4 @@
-<!-- source: docs/en/operations.md sha256: 4ecd18f6d8f836fde59198416e56615529f23c7348ccfb1fac151480ca424141 -->
+<!-- source: docs/en/operations.md sha256: b0555d27c1ccbf864468e97cbabf0832226b017a968b113dc4d9eea438cb693d -->
 # Betrieb
 
 *Deutsche Ausgabe — die [englische Fassung](../en/operations.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
@@ -231,7 +231,7 @@ erweitert, ist Maintainer-Dokumentation (`docs/maintainers/testing.md`).
 | --- | --- |
 | `composer audit` | keine bekannten Advisories im Dependency-Baum |
 | Pint, PHPStan Level 8 | Stil, Typen (einschließlich der Traits im Kontext eines echten Models) |
-| Test-Matrix | Verhalten auf SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4 × Laravel 12 als harte Gates, niedrigste und höchste Abhängigkeiten, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; Line Coverage ≥ 80 % (PHP 8.5 und Laravel 13 werden in einem separaten Job beobachtet, der fehlschlagen darf) |
+| Test-Matrix | Verhalten auf SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4/8.5 × Laravel 13 als harte Gates, niedrigste und höchste Abhängigkeiten, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; Line Coverage ≥ 80 % (PHP 8.5 und Laravel 13 werden in einem separaten Job beobachtet, der fehlschlagen darf) |
 | Nebenläufigkeits- und Lasttests | geforkte Writer verzweigen niemals eine Kette, mit und ohne Business-Transaktionen; Dutzende Writer auf zwei Ketten bleiben linear |
 | Randomisierte Invarianten | kanonisches JSON, Hashing, Identifier, Tenant-IDs und der Sanitiser gelten für zufällige Eingaben |
 | Known-Answer-Vektoren | das Hash-Format ist byteidentisch mit den erfassten Vektoren (Version, Domain-String, gehashte Felder, kanonisches JSON, HMAC); eine Änderung ist eine neue Hash-Version, niemals eine stille Bearbeitung, und `packages/audit/tests/Fixtures/hash-vectors.json` erlaubt es jedem, einen Hash ohne diese Codebasis nachzurechnen |

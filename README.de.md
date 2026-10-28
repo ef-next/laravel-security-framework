@@ -1,9 +1,9 @@
-<!-- source: README.md sha256: abf5679b95ed94a208633d5ce21be0e415d12e43aa5446ea0ecc62912774402a -->
+<!-- source: README.md sha256: 66fd68282e14ad067aebfbfc1223c148c133410b427d65f30916e2c579dce5da -->
 # ef.next Security Framework
 
 *Deutsche Ausgabe — die [englische Fassung](README.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
 
-Tenant-Isolation (Mandantentrennung) nach dem Prinzip fail closed (im Zweifel verweigern), ein manipulationssicher nachweisbares Audit-Log (Manipulationen werden erkannt) und sichere öffentliche Bezeichner für Laravel 12 auf PHP 8.3/8.4 (Laravel 13 und PHP 8.5: experimentell, siehe [Kompatibilität](#kompatibilität)).
+Tenant-Isolation (Mandantentrennung) nach dem Prinzip fail closed (im Zweifel verweigern), ein manipulationssicher nachweisbares Audit-Log (Manipulationen werden erkannt) und sichere öffentliche Bezeichner für Laravel 13 auf PHP 8.3, 8.4 und 8.5 (siehe [Kompatibilität](#kompatibilität)).
 
 **Status: Pre-Release.** Die aktuelle Versionslinie ist `1.0.0-beta` (siehe [CHANGELOG](CHANGELOG.md)); die API kann sich vor `1.0.0` noch ändern, und jede Änderung steht dort. Releases sind signierte Tags mit SBOMs ([Releasing](docs/maintainers/releasing.md)).
 
@@ -157,7 +157,7 @@ php artisan tenant:run acme reports:generate        # explicit context on the CL
 | --- | --- |
 | verstehen, was das Framework verspricht und was nicht | [Was es nicht tut](docs/de/what-it-does-not-do.md), [Bedrohungsmodell](docs/de/threat-model.md), [Konzepte](docs/de/concepts.md) |
 | es in eine Anwendung integrieren | [Erste Schritte](docs/de/getting-started.md) (eine vollständige erste Integration mit Beispielausgaben), dann die Anleitungen: [Tenancy](docs/de/guides/tenancy.md), [Addressing](docs/de/guides/addressing.md), [Auditing](docs/de/guides/auditing.md), [Jobs und Befehle](docs/de/guides/jobs-and-commands.md), [Sanctum-Tokens](docs/de/guides/sanctum-tokens.md); die [Integrations-Checkliste](docs/de/integration-checklist.md) vor dem Go-live |
-| alles in einer lauffähigen Anwendung sehen | [examples/laravel-app](examples/laravel-app/README.md) — eine Standard-Laravel-12-App plus fünfzehn Dateien, bei jedem Push in der CI installiert und getestet |
+| alles in einer lauffähigen Anwendung sehen | [examples/laravel-app](examples/laravel-app/README.md) — eine Standard-Laravel-13-App plus fünfzehn Dateien, bei jedem Push in der CI installiert und getestet |
 | etwas nachschlagen | [Konfiguration](docs/de/reference/configuration.md) (jeder Schlüssel und jede Umgebungsvariable), [Artisan-Befehle](docs/de/reference/artisan-commands.md), [Events](docs/de/reference/events.md), [Exceptions](docs/de/reference/exceptions.md), [Öffentliche API](docs/de/reference/api.md), [Kompatibilität](docs/de/reference/compatibility.md) |
 | es in Produktion betreiben | [Produktionsleitfaden](docs/de/guides/production.md) (Secrets, Datenbank, Anker auf Objektspeicher, das Deployment-Gate), [Betrieb](docs/de/operations.md) und seine Runbooks: [Monitoring](docs/de/operations/monitoring.md), [Schlüsselrotation](docs/de/operations/key-rotation.md), [Incident Response](docs/de/operations/incident-response.md); `.env.example` listet jede Variable |
 | ein Problem diagnostizieren | `php artisan security:doctor` (`--json`, `--strict`), dann [Fehlersuche](docs/de/guides/troubleshooting.md) nach Symptom |
@@ -205,15 +205,15 @@ Was noch fehlt, ist ein unabhängiges Sicherheitsaudit durch Dritte. Bis es vorl
 
 ## Kompatibilität
 
-| | Unterstützt – harte CI-Gates | Experimentell – installierbar, in der CI beobachtet, kein Support-Versprechen |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 |
-| Datenbanken | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite nur für Tests) | — |
+| | Unterstützt – harte CI-Gates |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| Datenbanken | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite nur für Tests) |
 
-Die Composer-Constraints lassen die experimentellen Kombinationen zu, damit sie
-ausprobiert werden können; eine Kombination wird unterstützt, sobald ihr CI-Job
-für ein Release ein verpflichtendes Gate war. Nur das jeweils neueste Minor-Release
+Jede unterstützte Kombination ist ein verpflichtendes CI-Gate, und die
+Composer-Constraints lassen nichts anderes zu (nur Laravel 13; PHP über 8.5
+lässt sich installieren, ist aber ungetestet). Nur das jeweils neueste Minor-Release
 erhält Korrekturen (`SECURITY.md`); der Release-Prozess steht in [docs/maintainers/releasing.md](docs/maintainers/releasing.md).
 
 ## Entwicklung

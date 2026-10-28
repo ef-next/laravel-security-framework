@@ -4,7 +4,7 @@
 #   bin/boost-check [target-dir]          default target: build/boost-app
 #
 # What it does, in the order a person (or an agent) would:
-#   1. composer create-project laravel/laravel        a stock Laravel 12 application
+#   1. composer create-project laravel/laravel        a stock Laravel 13 application
 #   2. composer require efnext/security-framework     from this repository (path repository)
 #      + composer require --dev laravel/boost
 #   3. boost.json selecting Claude Code and Codex     so boost:install runs without prompts
@@ -16,14 +16,14 @@
 # Docker image:  ./start-security-framework.sh boost
 #
 # Environment:
-#   LARAVEL   skeleton major version (default 12).
+#   LARAVEL   skeleton major version (default 13).
 #   BOOST     version constraint for laravel/boost (default: Composer's choice).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/.." && pwd)"
 TARGET="${1:-$REPO/build/boost-app}"
-LARAVEL="${LARAVEL:-12}"
+LARAVEL="${LARAVEL:-13}"
 BOOST="${BOOST:-}"
 SKILL="efnext-security-integration"
 HEADING="## ef.next Security Framework (efnext/security-framework)"

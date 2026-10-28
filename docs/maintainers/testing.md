@@ -26,7 +26,6 @@ installs Composer dependencies when needed and runs the gates:
 ./start-security-framework.sh down            # stop and remove the containers
 
 PHP_VERSION=8.5 ./start-security-framework.sh check          # another PHP image
-LARAVEL=13 ./start-security-framework.sh install             # resolve against Laravel 13, then test
 DEPS=lowest ./start-security-framework.sh install            # lowest allowed dependency versions, then test
 ```
 
@@ -52,12 +51,11 @@ makes a release impossible.
 | Job | Command | Gate |
 | --- | --- | --- |
 | `quality` | `composer audit`, `pint --test`, `phpstan analyse` (level 8) | no advisories, no style drift, no type errors |
-| `tests` | `pest --coverage --min=80` on PHP 8.3/8.4 × Laravel 12 × sqlite/pgsql/mysql/mariadb, plus PHP 8.3 with `--prefer-lowest` on every database | the suite passes everywhere in the support matrix; line coverage ≥ 80 % |
+| `tests` | `pest --coverage --min=80` on PHP 8.3/8.4/8.5 × Laravel 13 × sqlite/pgsql/mysql/mariadb, plus PHP 8.3 with `--prefer-lowest` on every database | the suite passes everywhere in the support matrix; line coverage ≥ 80 % |
 | `databases` | `pest` on PostgreSQL 14 and 17, MySQL 8.0, MariaDB 10.11 and 11.4 | the oldest and newest supported database versions behave the same |
 | `mutation` | `bin/mutate --min=70`, report uploaded as the `mutation-report` artifact | the tests notice changes to the security core |
 | `docs` | `bin/docs-check` (relative links and anchors; every `env()` of the package configs in `.env.example` and the configuration reference; every Artisan command, exception and event class in its reference page; every non-fragment `php` block parses; translation source headers) and mermaid-cli over `docs/en/diagrams/*.md` | the documentation matches the code and renders |
 | `example` | `examples/laravel-app/install.sh` on a fresh `laravel/laravel` skeleton with the framework installed from the checkout, once on SQLite and once on PostgreSQL: the example's tests (against that database, real triggers included), `audit:anchor`, `audit:verify`, `security:doctor` | the documented integration path works end to end on a real application |
-| `experimental` (ci.yml only, `continue-on-error`) | `pest` on PHP 8.5 × Laravel 12 and Laravel 13 combinations | observation, not a gate; a row that stays green for a minor release cycle moves into `tests` |
 
 Runners of a private repository have 2 vCPUs; the mutation job takes about
 50 minutes there, the rest a few minutes each. CI cancels a superseded run of
@@ -128,11 +126,19 @@ Everything else is a real gap: add a test that fails with the mutant (the
 `start-security-framework.sh mutate`, and raise the `--min` of the mutation job
 in `.github/workflows/gates.yml` when the score has moved up for good.
 
-## Adding a database version or a PHP version
+## Adding a database, PHP or Laravel version
 
-1. Add the row to `gates.yml` (`tests` or `databases` matrix) or, for a
-   combination without a support promise yet, to the `experimental` matrix in
-   `ci.yml`.
-2. Add the service image to `compose.yaml` if a local run should cover it.
-3. Update the support matrix in `README.md` ("Compatibility"),
+There is no experimental matrix: a version is either a gate or not supported.
+
+1. Try it locally first: `PHP_VERSION=… ./start-security-framework.sh check`
+   for PHP; for a new Laravel major, widen the `illuminate/*` constraints (and
+   the dev tools that pin a Laravel major, such as Testbench and
+   `pest-plugin-laravel`) on a branch and run
+   `LARAVEL=<major> ./start-security-framework.sh install`, `check`, `mutate`,
+   `example` and `boost`.
+2. Add the row to `gates.yml` (`tests` or `databases` matrix); the skeleton
+   version of `examples/laravel-app/install.sh` and `bin/boost-check` follows a
+   Laravel major.
+3. Add the service image to `compose.yaml` if a local run should cover it.
+4. Update the support matrix in `README.md` ("Compatibility"),
    `docs/maintainers/releasing.md` and the CHANGELOG in the same commit.

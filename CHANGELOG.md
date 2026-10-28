@@ -1,9 +1,19 @@
 # Changelog
 
-## 1.0.0-beta.2 – 2026-10-25
+## 1.0.0-beta.2 – 2026-10-28
 
-First public release. The code is that of 1.0.0-beta.1, which was not
-published; this release prepares the repository for publication.
+First public release, on Laravel 13. Apart from the move to Laravel 13, the
+code is that of 1.0.0-beta.1, which was not published; the rest of this
+release prepares the repository for publication.
+
+- **Laravel 13 only.** The `illuminate/*` constraints are `^13.0` (Laravel 12
+  is no longer installable), `symfony/http-kernel` is `^7.4 || ^8.0` like
+  Laravel 13's own. The test tooling moved to Pest 4 / PHPUnit 12,
+  `pest-plugin-laravel` 4 and Testbench 11. PHP 8.3, 8.4 and 8.5 are hard CI
+  gates on Laravel 13; the experimental CI matrix is gone, so every supported
+  combination is a gate and nothing else runs. The example application and
+  `bin/boost-check` build on the Laravel 13 skeleton; the example's
+  `bootstrap/app.php` follows it (JSON error responses for `api/*`).
 
 - The repository is now `github.com/ef-next/laravel-security-framework`, with a
   fresh history.

@@ -1,9 +1,9 @@
-<!-- source: README.md sha256: abf5679b95ed94a208633d5ce21be0e415d12e43aa5446ea0ecc62912774402a -->
+<!-- source: README.md sha256: 66fd68282e14ad067aebfbfc1223c148c133410b427d65f30916e2c579dce5da -->
 # ef.next Security Framework
 
 *Svensk utgåva — den [engelska versionen](README.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
 
-Fail closed tenant-isolering (nekar hellre än släpper igenom), en manipulationsdetekterande audit-logg och säkra publika identifierare för Laravel 12 på PHP 8.3/8.4 (Laravel 13 och PHP 8.5: experimentellt, se [Kompatibilitet](#kompatibilitet)).
+Fail closed tenant-isolering (nekar hellre än släpper igenom), en manipulationsdetekterande audit-logg och säkra publika identifierare för Laravel 13 på PHP 8.3, 8.4 och 8.5 (se [Kompatibilitet](#kompatibilitet)).
 
 **Status: förhandsversion.** Den aktuella versionslinjen är `1.0.0-beta` (se [CHANGELOG](CHANGELOG.md)); API:et kan fortfarande ändras före `1.0.0`, och varje ändring står där. Releaser är signerade taggar med SBOM:er ([Releasing](docs/maintainers/releasing.md)).
 
@@ -157,7 +157,7 @@ php artisan tenant:run acme reports:generate        # explicit context on the CL
 | --- | --- |
 | förstå vad ramverket lovar och inte lovar | [Vad det inte gör](docs/sv/what-it-does-not-do.md), [Hotmodell](docs/sv/threat-model.md), [Koncept](docs/sv/concepts.md) |
 | integrera det i en applikation | [Kom igång](docs/sv/getting-started.md) (en komplett första integration med exempelutdata), sedan guiderna: [Tenancy](docs/sv/guides/tenancy.md), [Addressing](docs/sv/guides/addressing.md), [Auditing](docs/sv/guides/auditing.md), [Jobb och kommandon](docs/sv/guides/jobs-and-commands.md), [Sanctum-tokens](docs/sv/guides/sanctum-tokens.md); [checklistan inför driftsättning](docs/sv/integration-checklist.md) före go-live |
-| se allt i en fungerande applikation | [examples/laravel-app](examples/laravel-app/README.md) — en standard-Laravel-12-app plus femton filer, installerad och testad i CI vid varje push |
+| se allt i en fungerande applikation | [examples/laravel-app](examples/laravel-app/README.md) — en standard-Laravel-13-app plus femton filer, installerad och testad i CI vid varje push |
 | slå upp något | [Konfiguration](docs/sv/reference/configuration.md) (varje nyckel och miljövariabel), [Artisan-kommandon](docs/sv/reference/artisan-commands.md), [Events](docs/sv/reference/events.md), [Exceptions](docs/sv/reference/exceptions.md), [Publikt API](docs/sv/reference/api.md), [Kompatibilitet](docs/sv/reference/compatibility.md) |
 | köra det i produktion | [Produktionsguide](docs/sv/guides/production.md) (hemligheter, databas, ankare på objektlagring, deployment-gate), [Drift](docs/sv/operations.md) och dess driftshandböcker: [Övervakning](docs/sv/operations/monitoring.md), [Nyckelrotation](docs/sv/operations/key-rotation.md), [Incidenthantering](docs/sv/operations/incident-response.md); `.env.example` listar varje variabel |
 | felsöka ett problem | `php artisan security:doctor` (`--json`, `--strict`), sedan [Felsökning](docs/sv/guides/troubleshooting.md) efter symptom |
@@ -205,15 +205,15 @@ Det som fortfarande saknas är en oberoende säkerhetsgranskning av tredje part.
 
 ## Kompatibilitet
 
-| | Stöds – hårda CI-grindar | Experimentellt – installerbart, observerat i CI, inget supportlöfte |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 |
-| Databaser | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite endast för tester) | — |
+| | Stöds – hårda CI-grindar |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| Databaser | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite endast för tester) |
 
-Composer-begränsningarna tillåter de experimentella kombinationerna så att de
-kan prövas; en kombination blir stödd när dess CI-jobb har varit en obligatorisk
-grind för en release. Endast den senaste minor-releasen får rättningar
+Varje kombination som stöds är en obligatorisk CI-grind, och
+Composer-begränsningarna tillåter inget annat (endast Laravel 13; PHP över 8.5
+går att installera men är otestat). Endast den senaste minor-releasen får rättningar
 (`SECURITY.md`); release-processen finns i [docs/maintainers/releasing.md](docs/maintainers/releasing.md).
 
 ## Utveckling

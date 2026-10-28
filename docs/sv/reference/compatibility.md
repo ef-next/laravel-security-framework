@@ -1,24 +1,26 @@
-<!-- source: docs/en/reference/compatibility.md sha256: 238e896975b942ab71a750b50774d978acc6d9338465739b842b393940621cfe -->
+<!-- source: docs/en/reference/compatibility.md sha256: a91c74d2b5080d54f8ec53c7ed58ec80dbb0d5371ea1f0c30a78b8cf2748f3aa -->
 # Kompatibilitet
 
 *Svensk utgåva — den [engelska versionen](../../en/reference/compatibility.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
 
 ## Supportmatris
 
-| | Stöds — hårda CI-gates | Experimentellt — installerbart, observeras i CI, ingen supportgaranti |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 (blockerad tills Pest-toolchainen stöder den; CI-raden visar det aktuella läget) |
-| PostgreSQL | 14, 16, 17 | — |
-| MySQL | 8.0, 8.4 | — |
-| MariaDB | 10.11, 11.4, 11 (senaste) | — |
-| SQLite | endast tester och lokal utveckling — produktion vägrar starta med den | — |
+| | Stöds — hårda CI-gates |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| PostgreSQL | 14, 16, 17 |
+| MySQL | 8.0, 8.4 |
+| MariaDB | 10.11, 11.4, 11 (senaste) |
+| SQLite | endast tester och lokal utveckling — produktion vägrar starta med den |
 
 ”Stöds” betyder att kombinationen är ett obligatoriskt jobb i CI-gates
 (`.github/workflows/gates.yml`) och att en release inte taggas medan det är
-rött. ”Experimentellt” körs i ett jobb som får misslyckas; en rad som
-förblir grön under en hel minor-releasecykel blir stödd. Composer-villkoren
-tillåter de experimentella kombinationerna så att de kan provas.
+rött. Det finns inga experimentella kombinationer: Composer-villkoren tillåter
+endast Laravel 13, och en ny PHP-, Laravel- eller databasversion blir stödd
+genom att bli en gate. Composer utesluter inte PHP-versioner över 8.5; de är
+otestade tills de är en gate. En applikation på Laravel 12 uppgraderar först
+till Laravel 13.
 
 Endast den senaste minor-releasen får rättningar (`SECURITY.md`).
 

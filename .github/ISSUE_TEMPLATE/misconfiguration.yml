@@ -27,7 +27,7 @@ body:
       label: Environment
       description: Hosting, database, where the signing keys live, anchor store, scheduler. No secrets.
       placeholder: |
-        Laravel 12 on Forge, PostgreSQL 16 (managed), keys in AWS Secrets Manager,
+        Laravel 13 on Forge, PostgreSQL 16 (managed), keys in AWS Secrets Manager,
         AUDIT_ANCHOR_STORES=filesystem,database on S3 with Object Lock, scheduler on one worker
     validations:
       required: true
@@ -35,6 +35,6 @@ body:
     id: versions
     attributes:
       label: Versions
-      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 12.x, PHP 8.4.x"
+      placeholder: "security-framework 1.0.0-beta.2, laravel/framework 13.x, PHP 8.4.x"
     validations:
       required: true

@@ -1,4 +1,4 @@
-<!-- source: docs/en/operations.md sha256: 4ecd18f6d8f836fde59198416e56615529f23c7348ccfb1fac151480ca424141 -->
+<!-- source: docs/en/operations.md sha256: b0555d27c1ccbf864468e97cbabf0832226b017a968b113dc4d9eea438cb693d -->
 # Drift
 
 *Svensk utgåva — den [engelska versionen](../en/operations.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
@@ -224,7 +224,7 @@ underhållare (`docs/maintainers/testing.md`).
 | --- | --- |
 | `composer audit` | inga kända säkerhetsvarningar (advisories) i beroendeträdet |
 | Pint, PHPStan nivå 8 | stil, typer (inklusive traits i en verklig modellkontext) |
-| Testmatris | beteende på SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4 × Laravel 12 som hårda grindar, lägsta och högsta beroenden, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; radtäckning ≥ 80 % (PHP 8.5 och Laravel 13 observeras i ett separat jobb som får misslyckas) |
+| Testmatris | beteende på SQLite, PostgreSQL, MySQL, MariaDB; PHP 8.3/8.4/8.5 × Laravel 13 som hårda grindar, lägsta och högsta beroenden, PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11; radtäckning ≥ 80 % (PHP 8.5 och Laravel 13 observeras i ett separat jobb som får misslyckas) |
 | Samtidighets- och lasttester | grenade (forkade) skrivare grenar aldrig en kedja, med och utan affärstransaktioner; dussintals skrivare på två kedjor förblir linjära |
 | Slumpmässiga invarianter | kanonisk JSON, hashning, identifierare, tenant-id:n och saniteraren håller för slumpmässig indata |
 | Kända testvektorer (known-answer vectors) | hashformatet är byte-identiskt med registrerade vektorer (version, domänsträng, hashade fält, kanonisk JSON, HMAC); en ändring är en ny hashversion, aldrig en tyst redigering, och `packages/audit/tests/Fixtures/hash-vectors.json` låter vem som helst räkna om en hash utan denna kodbas |

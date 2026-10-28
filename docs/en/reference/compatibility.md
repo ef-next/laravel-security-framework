@@ -2,20 +2,22 @@
 
 ## Support matrix
 
-| | Supported — hard CI gates | Experimental — installable, observed in CI, no support promise |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 (blocked until the Pest toolchain supports it; the CI row shows the current state) |
-| PostgreSQL | 14, 16, 17 | — |
-| MySQL | 8.0, 8.4 | — |
-| MariaDB | 10.11, 11.4, 11 (latest) | — |
-| SQLite | tests and local development only — production refuses to boot on it | — |
+| | Supported — hard CI gates |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| PostgreSQL | 14, 16, 17 |
+| MySQL | 8.0, 8.4 |
+| MariaDB | 10.11, 11.4, 11 (latest) |
+| SQLite | tests and local development only — production refuses to boot on it |
 
 "Supported" means the combination is a required job in the CI gates
 (`.github/workflows/gates.yml`) and a release is not tagged while it is red.
-"Experimental" rows run in a job that may fail; a row that stays green for a
-full minor release cycle becomes supported. The Composer constraints allow the
-experimental combinations so that they can be tried.
+There are no experimental combinations: the Composer constraints admit
+Laravel 13 only, and a new PHP, Laravel or database version becomes supported
+by becoming a gate. Composer does not exclude PHP versions above 8.5; they are
+untested until they are a gate. An application on Laravel 12 upgrades to
+Laravel 13 first.
 
 Only the latest minor release receives fixes (`SECURITY.md`).
 

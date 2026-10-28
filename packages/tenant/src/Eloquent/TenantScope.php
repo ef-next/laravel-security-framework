@@ -21,11 +21,13 @@ use LogicException;
  * Eloquent's withoutGlobalScope(TenantScope::class) still exists; treat any
  * use of it as a code-review finding. The supported way to read across
  * tenants is Tenancy::withoutTenant(), which is evented and auditable.
+ *
+ * @implements Scope<Model>
  */
 final class TenantScope implements Scope
 {
     /**
-     * @param  Builder<Model>  $builder
+     * @param  Builder<covariant Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {

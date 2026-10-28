@@ -17,7 +17,7 @@ check green except the two findings a development setup is expected to have
 
 ## 0. Prerequisites
 
-- PHP 8.3 or 8.4, Composer, a fresh Laravel 12 application (`laravel new billing`).
+- PHP 8.3, 8.4 or 8.5, Composer, a fresh Laravel 13 application (`laravel new billing`).
 - PostgreSQL, MySQL 8 or MariaDB for anything beyond this walk-through. SQLite
   is fine while you follow it — the framework refuses SQLite in production and
   tells you so.

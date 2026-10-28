@@ -1,4 +1,4 @@
-<!-- source: docs/en/getting-started.md sha256: a5c19fa283454d49323b40e2ad44145a9ec7ed7450877f21b8507efded549b2b -->
+<!-- source: docs/en/getting-started.md sha256: 29f71b1526afffb5248b11c06c7f61f21bdc871ae499a7877f7d31da9d621ad0 -->
 # Erste Schritte
 
 *Deutsche Ausgabe — die [englische Fassung](../en/getting-started.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
@@ -23,7 +23,7 @@ Grün.
 
 ## 0. Voraussetzungen
 
-- PHP 8.3 oder 8.4, Composer, eine frische Laravel-12-Anwendung (`laravel new billing`).
+- PHP 8.3, 8.4 oder 8.5, Composer, eine frische Laravel-13-Anwendung (`laravel new billing`).
 - PostgreSQL, MySQL 8 oder MariaDB für alles, was über diesen Rundgang
   hinausgeht. SQLite eignet sich, solange Sie ihm folgen — das Framework
   verweigert SQLite in Produktion und teilt Ihnen das mit.

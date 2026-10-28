@@ -4,7 +4,7 @@
 #   examples/laravel-app/install.sh [target-dir]      default target: build/example-app
 #
 # What it does, in the order a person (or an agent) would:
-#   1. composer create-project laravel/laravel        a stock Laravel 12 application
+#   1. composer create-project laravel/laravel        a stock Laravel 13 application
 #   2. copy the files in this directory over it       models, migrations, routes, tests
 #   3. composer require efnext/security-framework     from this repository (path repository)
 #      + laravel/sanctum                              the example authenticates with tokens
@@ -23,13 +23,13 @@
 #                   database_driver as FAIL, which is correct and tolerated here.
 #   DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, or the framework's
 #                   PGSQL_* / MYSQL_* / MARIADB_* variables from compose.yaml.
-#   LARAVEL         skeleton major version (default 12).
+#   LARAVEL         skeleton major version (default 13).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 TARGET="${1:-$REPO/build/example-app}"
-LARAVEL="${LARAVEL:-12}"
+LARAVEL="${LARAVEL:-13}"
 DB_CONNECTION="${DB_CONNECTION:-sqlite}"
 
 step() { printf '\n\033[1m▶ %s\033[0m\n' "$*"; }

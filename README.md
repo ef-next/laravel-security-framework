@@ -1,6 +1,6 @@
 # ef.next Security Framework
 
-Fail-closed tenant isolation, a tamper-evident audit log and safe public identifiers for Laravel 12 on PHP 8.3/8.4 (Laravel 13 and PHP 8.5: experimental, see [Compatibility](#compatibility)).
+Fail-closed tenant isolation, a tamper-evident audit log and safe public identifiers for Laravel 13 on PHP 8.3, 8.4 and 8.5 (see [Compatibility](#compatibility)).
 
 **Status: pre-release.** The current version line is `1.0.0-beta` (see the [CHANGELOG](CHANGELOG.md)); the API can still change before `1.0.0`, and every change is listed there. Releases are signed tags with SBOMs ([Releasing](docs/maintainers/releasing.md)).
 
@@ -154,7 +154,7 @@ php artisan tenant:run acme reports:generate        # explicit context on the CL
 | --- | --- |
 | understand what the framework does and does not promise | [What it does not do](docs/en/what-it-does-not-do.md), [Threat model](docs/en/threat-model.md), [Concepts](docs/en/concepts.md) |
 | integrate it into an application | [Getting started](docs/en/getting-started.md) (a complete first integration with sample outputs), then the guides: [Tenancy](docs/en/guides/tenancy.md), [Addressing](docs/en/guides/addressing.md), [Auditing](docs/en/guides/auditing.md), [Jobs and commands](docs/en/guides/jobs-and-commands.md), [Sanctum tokens](docs/en/guides/sanctum-tokens.md); the [Integration checklist](docs/en/integration-checklist.md) before go-live |
-| see it all in one working application | [examples/laravel-app](examples/laravel-app/README.md) — a stock Laravel 12 app plus fifteen files, installed and tested in CI on every push |
+| see it all in one working application | [examples/laravel-app](examples/laravel-app/README.md) — a stock Laravel 13 app plus fifteen files, installed and tested in CI on every push |
 | look something up | [Configuration](docs/en/reference/configuration.md) (every key and environment variable), [Artisan commands](docs/en/reference/artisan-commands.md), [Events](docs/en/reference/events.md), [Exceptions](docs/en/reference/exceptions.md), [Public API](docs/en/reference/api.md), [Compatibility](docs/en/reference/compatibility.md) |
 | run it in production | [Production guide](docs/en/guides/production.md) (secrets, database, anchors on object storage, the deployment gate), [Operations](docs/en/operations.md) and its runbooks: [Monitoring](docs/en/operations/monitoring.md), [Key rotation](docs/en/operations/key-rotation.md), [Incident response](docs/en/operations/incident-response.md); `.env.example` lists every variable |
 | diagnose a problem | `php artisan security:doctor` (`--json`, `--strict`), then [Troubleshooting](docs/en/guides/troubleshooting.md) by symptom |
@@ -202,15 +202,15 @@ What is still missing is an independent security audit by a third party. Until t
 
 ## Compatibility
 
-| | Supported – hard CI gates | Experimental – installable, observed in CI, no support promise |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 |
-| Databases | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite for tests only) | — |
+| | Supported – hard CI gates |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| Databases | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 (SQLite for tests only) |
 
-The Composer constraints allow the experimental combinations so that they can
-be tried; a combination becomes supported when its CI job has been a required
-gate for a release. Only the latest minor release receives fixes
+Every supported combination is a required CI gate, and the Composer
+constraints admit nothing else (Laravel 13 only; PHP above 8.5 installs but is
+untested). Only the latest minor release receives fixes
 (`SECURITY.md`); the release process is in [docs/maintainers/releasing.md](docs/maintainers/releasing.md).
 
 ## Development

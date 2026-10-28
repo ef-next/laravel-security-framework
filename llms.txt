@@ -1,6 +1,6 @@
 # ef.next Security Framework
 
-> Three Laravel packages (PHP 8.3+, Laravel 12) that make a multi-tenant application fail closed: `efnext/security-tenant` resolves the tenant of every request, job and command and refuses any query on a tenant-owned model without one; `efnext/security-audit` keeps an append-only, hash-chained, HMAC-signed, externally anchored audit log per tenant with a verifier and a doctor; `efnext/security-addressing` issues unguessable public ids and global object ids. MIT licence, ef.next AB.
+> Three Laravel packages (PHP 8.3+, Laravel 13) that make a multi-tenant application fail closed: `efnext/security-tenant` resolves the tenant of every request, job and command and refuses any query on a tenant-owned model without one; `efnext/security-audit` keeps an append-only, hash-chained, HMAC-signed, externally anchored audit log per tenant with a verifier and a doctor; `efnext/security-addressing` issues unguessable public ids and global object ids. MIT licence, ef.next AB.
 
 Read in this order if you are integrating the framework: AGENTS.md (the contract and the verification commands), then the README walk-through, then the guide for the part you touch. Every refusal and every doctor line names the fix; act on that text.
 
@@ -30,7 +30,7 @@ Read in this order if you are integrating the framework: AGENTS.md (the contract
 - [Events](docs/en/reference/events.md): the Laravel events the packages dispatch and what the audit log records for them
 - [Exceptions](docs/en/reference/exceptions.md): every exception, its HTTP status and what to do
 - [Public API](docs/en/reference/api.md): facades, traits, middleware, blueprint macros, contracts
-- [Compatibility](docs/en/reference/compatibility.md): supported and experimental PHP, Laravel and database versions
+- [Compatibility](docs/en/reference/compatibility.md): supported PHP, Laravel and database versions
 - [.env.example](.env.example): every environment variable with its default and a production block
 
 ## Operations
@@ -49,7 +49,7 @@ Read in this order if you are integrating the framework: AGENTS.md (the contract
 
 ## Example and verification
 
-- [Example application](examples/laravel-app/README.md): a stock Laravel 12 app plus fifteen files — models, migrations, routes, controller, job, tests — installed and tested in CI on every push
+- [Example application](examples/laravel-app/README.md): a stock Laravel 13 app plus fifteen files — models, migrations, routes, controller, job, tests — installed and tested in CI on every push
 - [Hash known-answer vectors](packages/audit/tests/Fixtures/hash-vectors.json): recompute an event hash and signature without this code base
 - [Testing](docs/maintainers/testing.md), [Releasing](docs/maintainers/releasing.md), [CONTRIBUTING.md](CONTRIBUTING.md): the gates, the release process, what a change needs
 

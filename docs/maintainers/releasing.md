@@ -6,18 +6,18 @@ downloadable is traceable to the tag, and the tag to a maintainer's key.
 
 ## Support matrix
 
-| | Supported (hard CI gates) | Experimental (installable, observed in CI, no support promise) |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 (until Testbench/Pest support it fully) |
-| Databases | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 | — |
-| Tests only | SQLite | |
+| | Supported (hard CI gates) |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| Databases | PostgreSQL 14–17, MySQL 8.0/8.4, MariaDB 10.11–11 |
+| Tests only | SQLite |
 
-"Supported" means: the combination is a required job in `.github/workflows/ci.yml`
-and a release is not tagged while it is red. The `experimental` job is
-`continue-on-error`; when it has been green for a full minor release cycle,
-move its combinations into the `tests` matrix and update this table, the
-README and the CHANGELOG in the same commit.
+"Supported" means: the combination is a required job in
+`.github/workflows/gates.yml` and a release is not tagged while it is red.
+There is no experimental matrix; a new version becomes supported by becoming a
+gate ([Testing](testing.md#adding-a-database-php-or-laravel-version)), with
+this table, the README and the CHANGELOG updated in the same commit.
 
 Only the latest minor release receives fixes (see `SECURITY.md`).
 
@@ -37,7 +37,7 @@ them as pre-release on GitHub.
 
 1. **Green everywhere.** On `main`: CI green including `mutation`; locally
    `./start-security-framework.sh check`, `matrix` and `mutate` green in
-   Docker. Do not release around a red `experimental` job, but do not wait for it either.
+   Docker.
 2. **Changelog.** Rename the top section from `## x.y.z – unreleased` to
    `## x.y.z – YYYY-MM-DD` and read it once as a user would. The release
    workflow refuses a tag without a matching `## x.y.z` section and uses it as

@@ -1,6 +1,6 @@
 # Example: a billing API on the ef.next Security Framework
 
-A stock Laravel 12 application plus the **fifteen files in this directory**:
+A stock Laravel 13 application plus the **fifteen files in this directory**:
 two tenants' worth of customers and invoices behind a token-authenticated API,
 with tenant isolation, public ids and a signed audit trail — and the tests
 that prove each guarantee.

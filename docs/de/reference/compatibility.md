@@ -1,25 +1,26 @@
-<!-- source: docs/en/reference/compatibility.md sha256: 238e896975b942ab71a750b50774d978acc6d9338465739b842b393940621cfe -->
+<!-- source: docs/en/reference/compatibility.md sha256: a91c74d2b5080d54f8ec53c7ed58ec80dbb0d5371ea1f0c30a78b8cf2748f3aa -->
 # Kompatibilität
 
 *Deutsche Ausgabe — die [englische Fassung](../../en/reference/compatibility.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
 
 ## Support-Matrix
 
-| | Unterstützt — feste CI-Gates | Experimentell — installierbar, wird in CI beobachtet, keine Unterstützungszusage |
-| --- | --- | --- |
-| PHP | 8.3, 8.4 | 8.5 |
-| Laravel | 12 | 13 (blockiert, bis die Pest-Toolchain es unterstützt; die CI-Zeile zeigt den aktuellen Stand) |
-| PostgreSQL | 14, 16, 17 | — |
-| MySQL | 8.0, 8.4 | — |
-| MariaDB | 10.11, 11.4, 11 (aktuellste) | — |
-| SQLite | nur Tests und lokale Entwicklung — Produktion verweigert damit den Start | — |
+| | Unterstützt — feste CI-Gates |
+| --- | --- |
+| PHP | 8.3, 8.4, 8.5 |
+| Laravel | 13 |
+| PostgreSQL | 14, 16, 17 |
+| MySQL | 8.0, 8.4 |
+| MariaDB | 10.11, 11.4, 11 (aktuellste) |
+| SQLite | nur Tests und lokale Entwicklung — Produktion verweigert damit den Start |
 
 „Unterstützt“ bedeutet, dass die Kombination ein erforderlicher Job in den
 CI-Gates ist (`.github/workflows/gates.yml`) und ein Release nicht getaggt
-wird, solange er rot ist. „Experimentell“-Zeilen laufen in einem Job, der
-fehlschlagen darf; eine Zeile, die einen vollen Minor-Release-Zyklus lang
-grün bleibt, wird unterstützt. Die Composer-Constraints erlauben die
-experimentellen Kombinationen, damit sie ausprobiert werden können.
+wird, solange er rot ist. Experimentelle Kombinationen gibt es nicht: Die
+Composer-Constraints lassen nur Laravel 13 zu, und eine neue PHP-, Laravel-
+oder Datenbankversion wird unterstützt, indem sie ein Gate wird. PHP-Versionen
+über 8.5 schließt Composer nicht aus; sie sind ungetestet, bis sie ein Gate
+sind. Eine Anwendung auf Laravel 12 aktualisiert zuerst auf Laravel 13.
 
 Nur das jeweils neueste Minor-Release erhält Fixes (`SECURITY.md`).
 

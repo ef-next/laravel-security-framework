@@ -1,4 +1,4 @@
-<!-- source: docs/en/getting-started.md sha256: a5c19fa283454d49323b40e2ad44145a9ec7ed7450877f21b8507efded549b2b -->
+<!-- source: docs/en/getting-started.md sha256: 29f71b1526afffb5248b11c06c7f61f21bdc871ae499a7877f7d31da9d621ad0 -->
 # Kom igång
 
 *Svensk utgåva — den [engelska versionen](../en/getting-started.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
@@ -20,7 +20,7 @@ varje kontroll grön utom de två fynd som en utvecklingsmiljö förväntas ha
 
 ## 0. Förutsättningar
 
-- PHP 8.3 eller 8.4, Composer, en ny Laravel 12-applikation (`laravel new billing`).
+- PHP 8.3, 8.4 eller 8.5, Composer, en ny Laravel 13-applikation (`laravel new billing`).
 - PostgreSQL, MySQL 8 eller MariaDB för allt bortom denna genomgång. SQLite
   fungerar medan du följer den — ramverket vägrar SQLite i produktion och
   säger det till dig.

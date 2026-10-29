@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 07fdfb2b8d43924e126975153d4298406662d800b27af7cf0632ac0cfe523d64 -->
+<!-- source: README.md sha256: 967138b80bf68118f8ca5cb4a1147895e6cd518103fe26312ed24a3af51120ea -->
 # ef.next Security Framework
 
 *Svensk utgåva — den [engelska versionen](README.md) gäller vid avvikelser. Kod, kommandon, konfigurationsnycklar, meddelanden och diagramtexter är på engelska.*
@@ -6,6 +6,8 @@
 Fail closed tenant-isolering (nekar hellre än släpper igenom), en manipulationsdetekterande audit-logg och säkra publika identifierare för Laravel 13 på PHP 8.3, 8.4 och 8.5 (se [Kompatibilitet](#kompatibilitet)).
 
 **Status: förhandsversion.** Den aktuella versionslinjen är `1.0.0-beta` (se [CHANGELOG](CHANGELOG.md)); API:et kan fortfarande ändras före `1.0.0`, och varje ändring står där. Releaser är signerade taggar med SBOM:er ([Releasing](docs/maintainers/releasing.md)).
+
+**Webbplats:** [security-framework.ef-next.com](https://security-framework.ef-next.com/) (på engelska) — vad ramverket är till för, kopplingen till Cyber Resilience Act, nyheter och kontakt. Koden och den fullständiga dokumentationen finns i det här repot.
 
 | Paket | Vad det gör |
 | --- | --- |

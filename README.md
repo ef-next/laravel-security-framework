@@ -4,6 +4,8 @@ Fail-closed tenant isolation, a tamper-evident audit log and safe public identif
 
 **Status: pre-release.** The current version line is `1.0.0-beta` (see the [CHANGELOG](CHANGELOG.md)); the API can still change before `1.0.0`, and every change is listed there. Releases are signed tags with SBOMs ([Releasing](docs/maintainers/releasing.md)).
 
+**Website:** [security-framework.ef-next.com](https://security-framework.ef-next.com/) — what the framework is for, the Cyber Resilience Act context, news and contact. This repository holds the code and the complete documentation.
+
 | Package | What it does |
 | --- | --- |
 | `efnext/security-tenant` | Resolves the tenant of a request, job or command; refuses every query on tenant-owned models without a tenant; enforces memberships and roles; propagates the tenant through queues. |

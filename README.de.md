@@ -1,4 +1,4 @@
-<!-- source: README.md sha256: 07fdfb2b8d43924e126975153d4298406662d800b27af7cf0632ac0cfe523d64 -->
+<!-- source: README.md sha256: 967138b80bf68118f8ca5cb4a1147895e6cd518103fe26312ed24a3af51120ea -->
 # ef.next Security Framework
 
 *Deutsche Ausgabe — die [englische Fassung](README.md) ist maßgeblich. Code, Befehle, Konfigurationsschlüssel, Meldungen und Diagrammbeschriftungen bleiben englisch.*
@@ -6,6 +6,8 @@
 Tenant-Isolation (Mandantentrennung) nach dem Prinzip fail closed (im Zweifel verweigern), ein manipulationssicher nachweisbares Audit-Log (Manipulationen werden erkannt) und sichere öffentliche Bezeichner für Laravel 13 auf PHP 8.3, 8.4 und 8.5 (siehe [Kompatibilität](#kompatibilität)).
 
 **Status: Pre-Release.** Die aktuelle Versionslinie ist `1.0.0-beta` (siehe [CHANGELOG](CHANGELOG.md)); die API kann sich vor `1.0.0` noch ändern, und jede Änderung steht dort. Releases sind signierte Tags mit SBOMs ([Releasing](docs/maintainers/releasing.md)).
+
+**Website:** [security-framework.ef-next.com/de/](https://security-framework.ef-next.com/de/) — wofür das Framework da ist, der Bezug zum Cyber Resilience Act, News und Kontakt. Code und vollständige Dokumentation liegen in diesem Repository.
 
 | Paket | Was es tut |
 | --- | --- |
